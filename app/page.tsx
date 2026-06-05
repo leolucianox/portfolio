@@ -285,8 +285,7 @@ export default function Home() {
           <hr className="my-[1.6vw] border-t border-white/15" />
 
           <div className="grid flex-1 items-center gap-[clamp(2rem,4vw,3rem)] lg:grid-cols-2">
-            {/* Retrato — quadrado, centralizado na metade esquerda — com a
-                dica de scroll logo abaixo (mobile e desktop) */}
+            {/* Retrato — quadrado, centralizado na metade esquerda */}
             <div className="order-2 flex flex-col items-center gap-6 lg:order-1">
               <div className="relative aspect-square w-[clamp(13rem,28vw,22rem)] overflow-hidden rounded-[1.5rem] border border-white/15 shadow-[0_30px_90px_-50px_rgba(255,255,255,0.25)]">
                 <Image
@@ -299,7 +298,8 @@ export default function Home() {
                 />
                 <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/10" />
               </div>
-              <div className="flex items-center gap-3 font-mono text-[0.7rem] uppercase tracking-[0.25em] text-white/40">
+              {/* Mobile: dica de scroll abaixo da foto */}
+              <div className="flex items-center gap-3 font-mono text-[0.7rem] uppercase tracking-[0.25em] text-white/40 lg:hidden">
                 <span className="h-px w-10 bg-white/30" />
                 Role para explorar
               </div>
@@ -321,6 +321,11 @@ export default function Home() {
                 web fluidas e performáticas. Abaixo, você confere alguns dos projetos em que estive
                 trabalhando.
               </p>
+              {/* Desktop: dica de scroll abaixo do texto */}
+              <div className="mt-7 hidden items-center gap-3 font-mono text-[0.7rem] uppercase tracking-[0.25em] text-white/40 lg:flex">
+                <span className="h-px w-10 bg-white/30" />
+                Role para explorar
+              </div>
             </div>
           </div>
         </FlowSection>

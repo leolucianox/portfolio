@@ -57,18 +57,34 @@ const FlowArt: React.FC<FlowArtProps> = ({
 }) => {
   const containerRef = useRef<HTMLElement>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
+  // O efeito de pin/rotação só roda no desktop. No mobile ele entra em
+  // conflito com o resize do viewport (barra de endereço que some/aparece),
+  // o que recalcula o ScrollTrigger e "joga" o usuário de volta às seções
+  // anteriores. Em telas menores deixamos o scroll nativo, sem pinning.
+  const [isDesktop, setIsDesktop] = useState(false);
 
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setReducedMotion(mq.matches);
+    // Evita que o show/hide da barra de endereço no mobile force refreshes.
+    ScrollTrigger.config({ ignoreMobileResize: true });
+
+    const motionMq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const desktopMq = window.matchMedia('(min-width: 1024px)');
+    const update = () => {
+      setReducedMotion(motionMq.matches);
+      setIsDesktop(desktopMq.matches);
+    };
     update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
+    motionMq.addEventListener('change', update);
+    desktopMq.addEventListener('change', update);
+    return () => {
+      motionMq.removeEventListener('change', update);
+      desktopMq.removeEventListener('change', update);
+    };
   }, []);
 
   useGSAP(
     () => {
-      if (!containerRef.current || reducedMotion) return;
+      if (!containerRef.current || reducedMotion || !isDesktop) return;
 
       const sections = Array.from(
         containerRef.current.querySelectorAll<HTMLElement>('[data-flow-section]'),
@@ -117,7 +133,7 @@ const FlowArt: React.FC<FlowArtProps> = ({
         triggers.forEach((t) => t.kill());
       };
     },
-    { scope: containerRef, dependencies: [childCount(children), reducedMotion] },
+    { scope: containerRef, dependencies: [childCount(children), reducedMotion, isDesktop] },
   );
 
   return (
