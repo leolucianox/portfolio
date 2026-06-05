@@ -221,7 +221,7 @@ const commercialProjects = [
 ];
 
 const studioProjects = [
-  { title: 'Estúdio Marquetti', subtitle: 'Fotografia', href: 'https://estudiotheo.vercel.app/', image: '/images/marchetti.png' },
+  { title: 'Estúdio Marquetti', subtitle: 'Fotografia', href: 'https://estudiomarquetti.vercel.app/', image: '/images/marchetti.png' },
   { title: 'Estúdio Tezzo', subtitle: 'Fotografia', href: 'https://estudiotezzo.vercel.app/', image: '/images/tezzo.png' },
   { title: 'Estúdio Vasconcelos', subtitle: 'Fotografia', href: 'https://estudiovasconcelos.vercel.app/', image: '/images/vasconcelos.png' },
 ];
