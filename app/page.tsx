@@ -53,6 +53,21 @@ interface ProjectCardProps {
 function ProjectCard({ title, subtitle, href, image, accent }: ProjectCardProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.3);
+  // O <iframe> ao vivo só é montado em dispositivos com hover real (desktop).
+  // No iOS/Android o preview NUNCA aparece (toque não tem hover) e vários
+  // iframes carregando sites externos completos estouram a memória do Safari,
+  // derrubando a aba ao chegar nas seções finais (crash observado no iPhone).
+  // Sem hover → mostramos apenas a capa estática. Isso elimina o crash e
+  // permite adicionar quantos sites quiser sem risco no mobile.
+  const [canHover, setCanHover] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const update = () => setCanHover(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
 
   // Mede a largura real do card e calcula a escala do iframe.
   // ResizeObserver mantém o preview nítido e proporcional em qualquer breakpoint.
@@ -90,21 +105,25 @@ function ProjectCard({ title, subtitle, href, image, accent }: ProjectCardProps)
           aria-hidden
         />
 
-        {/* Preview ao vivo (iframe escalado) — revelado e "rolado" no hover. */}
-        <div
-          className="absolute left-0 top-0 origin-top-left"
-          style={{ width: BASE_WIDTH, height: FRAME_HEIGHT, transform: `scale(${scale})` }}
-        >
-          <iframe
-            src={href}
-            title={`Preview de ${title}`}
-            loading="lazy"
-            tabIndex={-1}
-            aria-hidden
-            scrolling="no"
-            className="pointer-events-none h-full w-full border-0 transition-transform duration-[6000ms] ease-out [transform:translateY(0)] group-hover:[transform:translateY(-1200px)] motion-reduce:transition-none motion-reduce:group-hover:[transform:translateY(0)]"
-          />
-        </div>
+        {/* Preview ao vivo (iframe escalado) — revelado e "rolado" no hover.   */}
+        {/* Só em desktop com hover: no mobile não há hover e os iframes        */}
+        {/* derrubam o Safari por excesso de memória (ver nota em ProjectCard). */}
+        {canHover && (
+          <div
+            className="absolute left-0 top-0 origin-top-left"
+            style={{ width: BASE_WIDTH, height: FRAME_HEIGHT, transform: `scale(${scale})` }}
+          >
+            <iframe
+              src={href}
+              title={`Preview de ${title}`}
+              loading="lazy"
+              tabIndex={-1}
+              aria-hidden
+              scrolling="no"
+              className="pointer-events-none h-full w-full border-0 transition-transform duration-[6000ms] ease-out [transform:translateY(0)] group-hover:[transform:translateY(-1200px)] motion-reduce:transition-none motion-reduce:group-hover:[transform:translateY(0)]"
+            />
+          </div>
+        )}
 
         {/* Imagem de capa local (primeira tela do site) — sempre visível; some no hover. */}
         <Image
@@ -217,13 +236,21 @@ function SectionHead({ label, kicker, title, description, divider = 'border-whit
 const commercialProjects = [
   { title: 'Recanto da Paz', subtitle: 'Hotelaria · Chácara', href: 'https://recanto-da-paz.vercel.app/', image: '/images/chacararecantodapaz.png' },
   { title: 'Terapia Ocupacional', subtitle: 'Saúde · Bem-estar', href: 'https://terapiaocupacional.vercel.app/', image: '/images/terapiaocupacional.png' },
-  { title: 'Crazy Cow', subtitle: 'Lanchonete · Food', href: 'https://crazycow.vercel.app/', image: '/images/crazycow.png' },
+  { title: 'Azul Marina', subtitle: 'Imobiliário · Beira-mar', href: 'https://azulmarina.vercel.app/', image: '/images/azulmarina.png' },
+  { title: 'MARÉ Ateliê', subtitle: 'Moda · Slow fashion', href: 'https://mare-atelie.vercel.app/', image: '/images/mare.png' },
+];
+
+const gastronomyProjects = [
+  { title: 'Crazy Cow', subtitle: 'Lanchonete · Burgers', href: 'https://crazycow.vercel.app/', image: '/images/crazycow.png' },
+  { title: 'Pizzaria Dello', subtitle: 'Pizzaria · Forno a lenha', href: 'https://pizzariadello.vercel.app/', image: '/images/pizzariadello.png' },
+  { title: 'Altura Café', subtitle: 'Cafeteria · Torrefação', href: 'https://alturacafes.vercel.app/', image: '/images/altura.png' },
 ];
 
 const studioProjects = [
   { title: 'Estúdio Marquetti', subtitle: 'Fotografia', href: 'https://estudiomarquetti.vercel.app/', image: '/images/marchetti.png' },
   { title: 'Estúdio Tezzo', subtitle: 'Fotografia', href: 'https://estudiotezzo.vercel.app/', image: '/images/tezzo.png' },
   { title: 'Estúdio Vasconcelos', subtitle: 'Fotografia', href: 'https://estudiovasconcelos.vercel.app/', image: '/images/vasconcelos.png' },
+  { title: 'Mara Valente', subtitle: 'Fotografia · Casamentos', href: 'https://maravalente.vercel.app/', image: '/images/maravalente.png' },
 ];
 
 const gamingProjects = [
@@ -336,16 +363,31 @@ export default function Home() {
             label="Negócios & Landing Pages"
             kicker="Comercial"
             title="Soluções Comerciais"
-            description="Sites de conversão para negócios reais — do primeiro contato à reserva, pensados para velocidade, clareza e confiança."
+            description="Sites de conversão para negócios reais — de reservas a vendas, pensados para velocidade, clareza e confiança."
           />
-          <div className="mt-[clamp(2rem,4vw,3rem)] grid gap-[clamp(1.25rem,2.2vw,2rem)] sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
             {commercialProjects.map((p) => (
               <ProjectCard key={p.href} {...p} accent="#2F6B49" />
             ))}
           </div>
         </FlowSection>
 
-        {/* Seção 03 — Portfólios e Estúdios (Azul) */}
+        {/* Seção 03 — Gastronomia (Terracota) */}
+        <FlowSection aria-label="Gastronomia" style={{ backgroundColor: '#3A241B', color: '#fff' }}>
+          <SectionHead
+            label="Gastronomia & Cafés"
+            kicker="Sabor"
+            title="Gastronomia"
+            description="Cardápios que dão água na boca — hambúrgueres, pizza de forno a lenha e café especial. Sites que despertam o apetite e levam o cliente até a mesa."
+          />
+          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
+            {gastronomyProjects.map((p) => (
+              <ProjectCard key={p.href} {...p} accent="#8A4B2A" />
+            ))}
+          </div>
+        </FlowSection>
+
+        {/* Seção 04 — Portfólios e Estúdios (Azul) */}
         <FlowSection aria-label="Portfólios e Estúdios" style={{ backgroundColor: '#1A2B4C', color: '#fff' }}>
           <SectionHead
             label="Estúdios Criativos"
@@ -353,14 +395,14 @@ export default function Home() {
             title="Portfólios e Estúdios"
             description="Vitrines digitais para fotógrafos e estúdios criativos, onde a imagem é a protagonista e a navegação some para dar espaço à obra."
           />
-          <div className="mt-[clamp(2rem,4vw,3rem)] grid gap-[clamp(1.25rem,2.2vw,2rem)] sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
             {studioProjects.map((p) => (
               <ProjectCard key={p.href} {...p} accent="#2C4A85" />
             ))}
           </div>
         </FlowSection>
 
-        {/* Seção 04 — Gaming Projects (Cinza muito escuro) */}
+        {/* Seção 05 — Gaming Projects (Cinza muito escuro) */}
         <FlowSection aria-label="Gaming Projects" style={{ backgroundColor: '#111111', color: '#fff' }}>
           <SectionHead
             label="Gaming & Comunidade"
@@ -369,15 +411,15 @@ export default function Home() {
             description="Unindo desenvolvimento web com meus jogos favoritos."
             divider="border-white/20"
           />
-          {/* Grid de 3 colunas para manter o MESMO tamanho de card das outras seções */}
-          <div className="mt-[clamp(2rem,4vw,3rem)] grid gap-[clamp(1.25rem,2.2vw,2rem)] sm:grid-cols-2 lg:grid-cols-3">
+          {/* Mesmo grid das outras seções (4 col no desktop) p/ manter o tamanho de card */}
+          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
             {gamingProjects.map((p) => (
               <ProjectCard key={p.href} {...p} accent="#3A3A3A" />
             ))}
           </div>
         </FlowSection>
 
-        {/* Seção 05 — Contato (Preto) */}
+        {/* Seção 06 — Contato (Preto) */}
         <FlowSection aria-label="Contato" style={{ backgroundColor: '#000000', color: '#fff' }}>
           <div className="flex items-center justify-between font-mono text-[0.7rem] uppercase tracking-[0.25em] text-white/60">
             <span>Contato</span>
