@@ -172,6 +172,138 @@ function ProjectCard({ title, subtitle, href, image, accent, live }: ProjectCard
 }
 
 /* -------------------------------------------------------------------------- */
+/*  ThemeShowcaseCard                                                          */
+/*  Destaque para templates "multitema": um mesmo site que troca de identidade */
+/*  por completo (cores, tipografia, clima). Capa estática por padrão; no hover */
+/*  (desktop) toca um vídeo curto mostrando a troca de temas ao vivo. No mobile */
+/*  fica só a capa — mesma lógica anti-crash do ProjectCard (toque não tem      */
+/*  hover e mídia pesada derruba o Safari).                                     */
+/* -------------------------------------------------------------------------- */
+
+interface ThemeShowcaseProps {
+  title: string;
+  /** Linha-fina acima do título (ex.: "Um template, cinco identidades"). */
+  tagline: string;
+  description: string;
+  href: string;
+  /** Capa estática (primeira tela do site). */
+  image: string;
+  /** Vídeo curto da troca de temas — tocado no hover (desktop). */
+  video: string;
+  /** Temas disponíveis dentro do template — viram chips abaixo do texto. */
+  themes: string[];
+  /** Cor de destaque do fallback, harmonizada com a seção. */
+  accent: string;
+}
+
+function ThemeShowcaseCard({ title, tagline, description, href, image, video, themes, accent }: ThemeShowcaseProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [canHover, setCanHover] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const update = () => setCanHover(mq.matches);
+    update();
+    mq.addEventListener('change', update);
+    return () => mq.removeEventListener('change', update);
+  }, []);
+
+  const playPreview = () => {
+    const v = videoRef.current;
+    if (!v) return;
+    v.currentTime = 0;
+    v.play().catch(() => {});
+  };
+  const stopPreview = () => {
+    videoRef.current?.pause();
+  };
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onMouseEnter={playPreview}
+      onMouseLeave={stopPreview}
+      className="group block rounded-2xl border border-white/12 bg-white/[0.03] p-[clamp(1rem,1.8vw,1.5rem)] shadow-[0_16px_50px_-30px_rgba(0,0,0,0.9)] transition-[transform,border-color,box-shadow] duration-500 ease-out hover:-translate-y-1 hover:border-white/25 hover:shadow-[0_32px_80px_-40px_rgba(0,0,0,0.95)] focus:outline-none focus-visible:border-white/40"
+      aria-label={`Abrir ${title} em uma nova aba`}
+    >
+      {/* Palco do preview — capa por padrão; vídeo da troca de temas no hover.   */}
+      {/* max-h em vh garante que dois cards + cabeçalho caibam em ~100vh,         */}
+      {/* mantendo a seção do mesmo tamanho das outras (troca de página no scroll). */}
+      <div className="relative aspect-[16/10] max-h-[34vh] w-full overflow-hidden rounded-xl border border-white/12 bg-white/[0.03]">
+        {/* Camada-base: gradiente de fallback */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `radial-gradient(120% 120% at 0% 0%, ${accent}55 0%, transparent 55%), linear-gradient(135deg, ${accent} 0%, #050505 90%)`,
+          }}
+          aria-hidden
+        />
+
+        {/* Vídeo da troca de temas — só em desktop com hover (ver nota acima) */}
+        {canHover && (
+          <video
+            ref={videoRef}
+            src={video}
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            tabIndex={-1}
+            aria-hidden
+            className="absolute inset-0 h-full w-full object-cover object-top opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
+          />
+        )}
+
+        {/* Capa local — sempre visível; some no hover revelando o vídeo */}
+        <Image
+          src={image}
+          alt={`Página inicial do template ${title} (temas: ${themes.join(', ')}), desenvolvido por Leonardo Luciano`}
+          fill
+          sizes="(max-width: 1024px) 100vw, 45vw"
+          className="object-cover object-top transition-opacity duration-500 ease-out group-hover:opacity-0"
+        />
+
+        {/* Selo multitema — quantos temas o template oferece */}
+        <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-full border border-white/25 bg-black/55 px-2.5 py-1 font-mono text-[0.6rem] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
+          {themes.length} temas
+        </div>
+
+        {/* Selo "Visitar" — entra com fade + slide no hover */}
+        <div className="pointer-events-none absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 font-mono text-[0.62rem] font-semibold uppercase tracking-wider text-black opacity-0 transition-all duration-500 ease-out [transform:translateY(-6px)] group-hover:opacity-100 group-hover:[transform:translateY(0)]">
+          Visitar
+          <ArrowUpRight className="h-3 w-3" strokeWidth={2.5} />
+        </div>
+      </div>
+
+      {/* Texto + chips de tema */}
+      <div className="mt-[clamp(0.85rem,1.4vw,1.15rem)] transition-transform duration-500 ease-out group-hover:translate-x-1">
+        <p className="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-white/50">{tagline}</p>
+        <h3 className="mt-1.5 flex items-center gap-2 font-display text-lg font-semibold leading-tight text-white">
+          {title}
+          <ArrowUpRight
+            className="h-4 w-4 shrink-0 text-white/40 transition-all duration-500 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white"
+            strokeWidth={2}
+          />
+        </h3>
+        <p className="mt-2 line-clamp-2 max-w-[46ch] text-sm leading-relaxed text-white/60">{description}</p>
+        <div className="mt-3.5 flex flex-wrap gap-1.5">
+          {themes.map((t) => (
+            <span
+              key={t}
+              className="rounded-full border border-white/15 bg-white/[0.04] px-2.5 py-1 font-mono text-[0.6rem] uppercase tracking-wider text-white/70"
+            >
+              {t}
+            </span>
+          ))}
+        </div>
+      </div>
+    </a>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Botão "próxima seção" — garante navegação mesmo se o scroll travar         */
 /*  (útil principalmente no mobile). Avança ~1 viewport; no fim, volta ao topo.*/
 /* -------------------------------------------------------------------------- */
@@ -193,9 +325,17 @@ function ScrollNav() {
   const handleClick = () => {
     if (atBottom) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      window.scrollBy({ top: window.innerHeight * 0.92, behavior: 'smooth' });
+      return;
     }
+    // Cada seção ocupa exatamente uma viewport (o motor de scroll fixa/encaixa
+    // os painéis em 100vh). Para "trocar de página por completo", saltamos para
+    // o próximo múltiplo inteiro de innerHeight — assim a próxima seção fica 100%
+    // na tela, não importa a posição em que o botão foi clicado.
+    const vh = window.innerHeight;
+    const maxScroll = document.documentElement.scrollHeight - vh;
+    const currentPage = Math.floor(window.scrollY / vh + 0.0001);
+    const target = Math.min((currentPage + 1) * vh, maxScroll);
+    window.scrollTo({ top: target, behavior: 'smooth' });
   };
 
   return (
@@ -247,6 +387,34 @@ function SectionHead({ label, kicker, title, description, divider = 'border-whit
 /* -------------------------------------------------------------------------- */
 /*  Dados                                                                     */
 /* -------------------------------------------------------------------------- */
+
+// Templates "multitema": um mesmo molde que troca de identidade por completo.
+// Cada item tem capa + vídeo da troca de temas (em /images/<pasta>/).
+// Para adicionar outro no mesmo molde, basta incluir mais um objeto aqui.
+const themeShowcases = [
+  {
+    title: 'Five Themes',
+    tagline: 'Um template · cinco identidades',
+    description:
+      'A base do estúdio Larissa Wand reimaginada em cinco universos. Um seletor troca cores, tipografia e clima — e o mesmo site vira outro negócio, sem trocar de página.',
+    href: 'https://fivethemes.vercel.app/',
+    image: '/images/cincotemas/capa-5-temas.png',
+    video: '/images/cincotemas/switcher-demo.mp4',
+    themes: ['Fotografia', 'Chef', 'Arquitetura', 'DJ', 'Ateliê'],
+  },
+  // Placeholder — duplicado só para visualizar o layout com dois cards.
+  // Substituir pelos dados do segundo site multitema quando ele ficar pronto.
+  {
+    title: 'Five Themes',
+    tagline: 'Um template · cinco identidades',
+    description:
+      'A base do estúdio Larissa Wand reimaginada em cinco universos. Um seletor troca cores, tipografia e clima — e o mesmo site vira outro negócio, sem trocar de página.',
+    href: 'https://fivethemes.vercel.app/',
+    image: '/images/cincotemas/capa-5-temas.png',
+    video: '/images/cincotemas/switcher-demo.mp4',
+    themes: ['Fotografia', 'Chef', 'Arquitetura', 'DJ', 'Ateliê'],
+  },
+];
 
 const commercialProjects = [
   { title: 'Recanto da Paz', subtitle: 'Hotelaria · Chácara', href: 'https://recanto-da-paz.vercel.app/', image: '/images/chacararecantodapaz.png', live: true },
@@ -322,6 +490,15 @@ export default function Home() {
 
         {/* Seção 01 — Hero (Preto) */}
         <FlowSection aria-label="Apresentação" style={{ backgroundColor: '#000000', color: '#fff' }}>
+          {/* Faixa colorida no topo do Hero. Em cada virada de página, a seção  */}
+          {/* que gira por cima revela uma faixa da cor da seção anterior no     */}
+          {/* topo. Como o Hero é preto (= fundo da página), essa faixa some na  */}
+          {/* primeira transição; esta barra garante a mesma "bordinha" colorida */}
+          {/* ao entrar na Multitema (cor ajustável). */}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[clamp(6px,1vh,12px)] bg-[#1C3A5E]"
+            aria-hidden
+          />
           <div className="flex items-center justify-between font-mono text-[0.7rem] uppercase tracking-[0.25em] text-white/60">
             <span>Leonardo Luciano</span>
             <span className="hidden sm:inline">Portfólio Digital</span>
@@ -374,8 +551,23 @@ export default function Home() {
           </div>
         </FlowSection>
 
-        {/* Seção 02 — Soluções Comerciais (Verde) */}
-        <FlowSection aria-label="Soluções Comerciais" style={{ backgroundColor: '#1F3D2D', color: '#fff' }}>
+        {/* Seção 02 — Templates Multitema (Azul — camisa) */}
+        <FlowSection aria-label="Templates Multitema" style={{ backgroundColor: '#1C3A5E', color: '#fff' }}>
+          <SectionHead
+            label="Um molde · Várias identidades"
+            kicker="Camaleão"
+            title="Templates Multitema"
+            description="Um único template que veste vários negócios: um seletor troca cores, tipografia e clima e o mesmo site vira outro. Passe o mouse e veja a troca de temas acontecer ao vivo."
+          />
+          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-1 gap-[clamp(1.5rem,2.5vw,2rem)] lg:grid-cols-2">
+            {themeShowcases.map((p, i) => (
+              <ThemeShowcaseCard key={i} {...p} accent="#2E5C92" />
+            ))}
+          </div>
+        </FlowSection>
+
+        {/* Seção 03 — Soluções Comerciais (Verde — encostas) */}
+        <FlowSection aria-label="Soluções Comerciais" style={{ backgroundColor: '#273A22', color: '#fff' }}>
           <SectionHead
             label="Negócios & Landing Pages"
             kicker="Comercial"
@@ -389,8 +581,8 @@ export default function Home() {
           </div>
         </FlowSection>
 
-        {/* Seção 03 — Gastronomia (Terracota) */}
-        <FlowSection aria-label="Gastronomia" style={{ backgroundColor: '#3A241B', color: '#fff' }}>
+        {/* Seção 04 — Gastronomia (Marrom — ruínas/terra) */}
+        <FlowSection aria-label="Gastronomia" style={{ backgroundColor: '#3A271B', color: '#fff' }}>
           <SectionHead
             label="Gastronomia & Cafés"
             kicker="Sabor"
@@ -404,8 +596,8 @@ export default function Home() {
           </div>
         </FlowSection>
 
-        {/* Seção 04 — Portfólios e Estúdios (Azul) */}
-        <FlowSection aria-label="Portfólios e Estúdios" style={{ backgroundColor: '#1A2B4C', color: '#fff' }}>
+        {/* Seção 05 — Portfólios e Estúdios (Azul — camisa) */}
+        <FlowSection aria-label="Portfólios e Estúdios" style={{ backgroundColor: '#1C3A5E', color: '#fff' }}>
           <SectionHead
             label="Estúdios Criativos"
             kicker="Visual"
@@ -419,8 +611,8 @@ export default function Home() {
           </div>
         </FlowSection>
 
-        {/* Seção 05 — Gaming Projects (Cinza muito escuro) */}
-        <FlowSection aria-label="Gaming Projects" style={{ backgroundColor: '#111111', color: '#fff' }}>
+        {/* Seção 06 — Gaming Projects (Verde — encostas) */}
+        <FlowSection aria-label="Gaming Projects" style={{ backgroundColor: '#273A22', color: '#fff' }}>
           <SectionHead
             label="Gaming & Comunidade"
             kicker="Paixões"
@@ -431,12 +623,12 @@ export default function Home() {
           {/* Mesmo grid das outras seções (4 col no desktop) p/ manter o tamanho de card */}
           <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
             {gamingProjects.map((p) => (
-              <ProjectCard key={p.href} {...p} accent="#3A3A3A" />
+              <ProjectCard key={p.href} {...p} accent="#3E5A33" />
             ))}
           </div>
         </FlowSection>
 
-        {/* Seção 06 — Contato (Preto) */}
+        {/* Seção 07 — Contato (Preto) */}
         <FlowSection aria-label="Contato" style={{ backgroundColor: '#000000', color: '#fff' }}>
           <div className="flex items-center justify-between font-mono text-[0.7rem] uppercase tracking-[0.25em] text-white/60">
             <span>Contato</span>
