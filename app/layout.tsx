@@ -21,10 +21,56 @@ const mono = JetBrains_Mono({
   display: 'swap',
 });
 
+const SITE_URL = 'https://leoluciano.com.br';
+const SITE_TITLE = 'Leonardo Luciano — Desenvolvedor Front-end & Cloud Operations';
+const SITE_DESCRIPTION =
+  'Desenvolvedor front-end e profissional de Cloud Operations. Crio landing pages e sites rápidos, acessíveis e de alta conversão para negócios reais.';
+// A imagem de preview (og:image / twitter:image) é gerada dinamicamente em
+// app/opengraph-image.tsx e injetada automaticamente pelo Next.
+
 export const metadata: Metadata = {
-  title: 'Leonardo Luciano — Portfólio Digital',
-  description:
-    'Portfólio digital de Leonardo Luciano — experiências web fluidas e performáticas.',
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  applicationName: 'Portfólio de Leonardo Luciano',
+  authors: [{ name: 'Leonardo Luciano', url: SITE_URL }],
+  creator: 'Leonardo Luciano',
+  keywords: [
+    'Leonardo Luciano',
+    'desenvolvedor front-end',
+    'desenvolvimento web',
+    'Cloud Operations',
+    'landing pages',
+    'Next.js',
+    'React',
+    'portfólio',
+  ],
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'pt_BR',
+    url: SITE_URL,
+    siteName: 'Leonardo Luciano',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
 };
 
 export default function RootLayout({

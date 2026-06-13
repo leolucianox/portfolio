@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { ArrowUpRight, ChevronDown, Mail } from 'lucide-react';
+import { ArrowUpRight, Check, ChevronDown, Mail } from 'lucide-react';
 import FlowArt, { FlowSection } from '@/components/ui/story-scroll';
 
 /* -------------------------------------------------------------------------- */
@@ -48,9 +48,11 @@ interface ProjectCardProps {
   image: string;
   /** Cor de destaque do fallback, harmonizada com a seção. */
   accent: string;
+  /** Site já no ar, em uso por um cliente real — exibe o selo "No ar". */
+  live?: boolean;
 }
 
-function ProjectCard({ title, subtitle, href, image, accent }: ProjectCardProps) {
+function ProjectCard({ title, subtitle, href, image, accent, live }: ProjectCardProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.3);
   // O <iframe> ao vivo só é montado em dispositivos com hover real (desktop).
@@ -128,11 +130,24 @@ function ProjectCard({ title, subtitle, href, image, accent }: ProjectCardProps)
         {/* Imagem de capa local (primeira tela do site) — sempre visível; some no hover. */}
         <Image
           src={image}
-          alt={`Página inicial de ${title}`}
+          alt={
+            subtitle
+              ? `Página inicial do site ${title} (${subtitle}), desenvolvido por Leonardo Luciano`
+              : `Página inicial do site ${title}, desenvolvido por Leonardo Luciano`
+          }
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover object-top transition-opacity duration-500 ease-out group-hover:opacity-0"
         />
+
+        {/* Selo "No ar" — site em produção, usado por um cliente real. Sempre */}
+        {/* visível, no canto superior esquerdo (não conflita com o "Visitar"). */}
+        {live && (
+          <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-full border border-emerald-300/40 bg-emerald-500/90 px-2.5 py-1 font-mono text-[0.6rem] font-semibold uppercase tracking-wider text-white shadow-[0_6px_18px_-6px_rgba(16,185,129,0.8)] backdrop-blur-sm">
+            <Check className="h-3 w-3" strokeWidth={3} />
+            No ar
+          </div>
+        )}
 
         {/* Selo "Visitar" — entra com fade + slide no hover */}
         <div className="pointer-events-none absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 font-mono text-[0.62rem] font-semibold uppercase tracking-wider text-black opacity-0 transition-all duration-500 ease-out [transform:translateY(-6px)] group-hover:opacity-100 group-hover:[transform:translateY(0)]">
@@ -234,23 +249,25 @@ function SectionHead({ label, kicker, title, description, divider = 'border-whit
 /* -------------------------------------------------------------------------- */
 
 const commercialProjects = [
-  { title: 'Recanto da Paz', subtitle: 'Hotelaria · Chácara', href: 'https://recanto-da-paz.vercel.app/', image: '/images/chacararecantodapaz.png' },
-  { title: 'Terapia Ocupacional', subtitle: 'Saúde · Bem-estar', href: 'https://terapiaocupacional.vercel.app/', image: '/images/terapiaocupacional.png' },
+  { title: 'Recanto da Paz', subtitle: 'Hotelaria · Chácara', href: 'https://recanto-da-paz.vercel.app/', image: '/images/chacararecantodapaz.png', live: true },
+  { title: 'Terapia Ocupacional', subtitle: 'Saúde · Bem-estar', href: 'https://adapteseterapiaocupacional.com.br/', image: '/images/terapiaocupacional.png', live: true },
   { title: 'Azul Marina', subtitle: 'Imobiliário · Beira-mar', href: 'https://azulmarina.vercel.app/', image: '/images/azulmarina.png' },
   { title: 'MARÉ Ateliê', subtitle: 'Moda · Slow fashion', href: 'https://mare-atelie.vercel.app/', image: '/images/mare.png' },
 ];
 
 const gastronomyProjects = [
   { title: 'Crazy Cow', subtitle: 'Lanchonete · Burgers', href: 'https://crazycow.vercel.app/', image: '/images/crazycow.png' },
+  { title: 'Altura', subtitle: 'Cafeteria · Torrefação', href: 'https://alturacafes.vercel.app/', image: '/images/altura.png' },
   { title: 'Pizzaria Dello', subtitle: 'Pizzaria · Forno a lenha', href: 'https://pizzariadello.vercel.app/', image: '/images/pizzariadello.png' },
-  { title: 'Altura Café', subtitle: 'Cafeteria · Torrefação', href: 'https://alturacafes.vercel.app/', image: '/images/altura.png' },
 ];
 
 const studioProjects = [
-  { title: 'Estúdio Marquetti', subtitle: 'Fotografia', href: 'https://estudiomarquetti.vercel.app/', image: '/images/marchetti.png' },
+  { title: 'Larissa Wand', subtitle: 'Fotografia', href: 'https://projetolk.vercel.app/', image: '/images/larissawand.png' },
   { title: 'Estúdio Tezzo', subtitle: 'Fotografia', href: 'https://estudiotezzo.vercel.app/', image: '/images/tezzo.png' },
   { title: 'Estúdio Vasconcelos', subtitle: 'Fotografia', href: 'https://estudiovasconcelos.vercel.app/', image: '/images/vasconcelos.png' },
-  { title: 'Mara Valente', subtitle: 'Fotografia · Casamentos', href: 'https://maravalente.vercel.app/', image: '/images/maravalente.png' },
+  { title: 'Estúdio Marquetti', subtitle: 'Fotografia', href: 'https://estudiomarquetti.vercel.app/', image: '/images/marchetti.png' },
+  // Oculto temporariamente a pedido — reativar quando o cliente liberar.
+  // { title: 'Mara Valente', subtitle: 'Fotografia · Casamentos', href: 'https://maravalente.vercel.app/', image: '/images/maravalente.png' },
 ];
 
 const gamingProjects = [
