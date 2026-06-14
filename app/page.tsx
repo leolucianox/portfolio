@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { ArrowUpRight, Check, ChevronDown, Mail } from 'lucide-react';
+import { ArrowUpRight, Check, ChevronDown, Clock, Mail } from 'lucide-react';
 import FlowArt, { FlowSection } from '@/components/ui/story-scroll';
 
 /* -------------------------------------------------------------------------- */
@@ -194,9 +194,11 @@ interface ThemeShowcaseProps {
   themes: string[];
   /** Cor de destaque do fallback, harmonizada com a seção. */
   accent: string;
+  /** Card ainda não publicado: desfocado, desabilitado, com selo "Em breve". */
+  comingSoon?: boolean;
 }
 
-function ThemeShowcaseCard({ title, tagline, description, href, image, video, themes, accent }: ThemeShowcaseProps) {
+function ThemeShowcaseCard({ title, tagline, description, href, image, video, themes, accent, comingSoon }: ThemeShowcaseProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [canHover, setCanHover] = useState(false);
 
@@ -218,16 +220,9 @@ function ThemeShowcaseCard({ title, tagline, description, href, image, video, th
     videoRef.current?.pause();
   };
 
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      onMouseEnter={playPreview}
-      onMouseLeave={stopPreview}
-      className="group block rounded-2xl border border-white/12 bg-white/[0.03] p-[clamp(1rem,1.8vw,1.5rem)] shadow-[0_16px_50px_-30px_rgba(0,0,0,0.9)] transition-[transform,border-color,box-shadow] duration-500 ease-out hover:-translate-y-1 hover:border-white/25 hover:shadow-[0_32px_80px_-40px_rgba(0,0,0,0.95)] focus:outline-none focus-visible:border-white/40"
-      aria-label={`Abrir ${title} em uma nova aba`}
-    >
+  // Conteúdo interno compartilhado entre o card ativo (<a>) e o "Em breve" (<div>).
+  const inner = (
+    <>
       {/* Palco do preview — capa por padrão; vídeo da troca de temas no hover.   */}
       {/* max-h em vh garante que dois cards + cabeçalho caibam em ~100vh,         */}
       {/* mantendo a seção do mesmo tamanho das outras (troca de página no scroll). */}
@@ -241,8 +236,8 @@ function ThemeShowcaseCard({ title, tagline, description, href, image, video, th
           aria-hidden
         />
 
-        {/* Vídeo da troca de temas — só em desktop com hover (ver nota acima) */}
-        {canHover && (
+        {/* Vídeo da troca de temas — só em desktop com hover e card ativo */}
+        {canHover && !comingSoon && (
           <video
             ref={videoRef}
             src={video}
@@ -256,36 +251,59 @@ function ThemeShowcaseCard({ title, tagline, description, href, image, video, th
           />
         )}
 
-        {/* Capa local — sempre visível; some no hover revelando o vídeo */}
+        {/* Capa local — sempre visível; some no hover revelando o vídeo.        */}
+        {/* No "Em breve" fica desfocada e escurecida (preview indisponível).     */}
         <Image
           src={image}
           alt={`Página inicial do template ${title} (temas: ${themes.join(', ')}), desenvolvido por Leonardo Luciano`}
           fill
           sizes="(max-width: 1024px) 100vw, 45vw"
-          className="object-cover object-top transition-opacity duration-500 ease-out group-hover:opacity-0"
+          className={
+            comingSoon
+              ? 'scale-105 object-cover object-top blur-[3px] brightness-[0.55] saturate-[0.7]'
+              : 'object-cover object-top transition-opacity duration-500 ease-out group-hover:opacity-0'
+          }
         />
 
-        {/* Selo multitema — quantos temas o template oferece */}
-        <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-full border border-white/25 bg-black/55 px-2.5 py-1 font-mono text-[0.6rem] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
-          {themes.length} temas
-        </div>
+        {comingSoon ? (
+          /* Selo "Em breve" — espelha o "No ar", em âmbar */
+          <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-full border border-amber-300/40 bg-amber-500/90 px-2.5 py-1 font-mono text-[0.6rem] font-semibold uppercase tracking-wider text-white shadow-[0_6px_18px_-6px_rgba(245,158,11,0.8)] backdrop-blur-sm">
+            <Clock className="h-3 w-3" strokeWidth={3} />
+            Em breve
+          </div>
+        ) : (
+          <>
+            {/* Selo multitema — quantos temas o template oferece */}
+            <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-full border border-white/25 bg-black/55 px-2.5 py-1 font-mono text-[0.6rem] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
+              {themes.length} temas
+            </div>
 
-        {/* Selo "Visitar" — entra com fade + slide no hover */}
-        <div className="pointer-events-none absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 font-mono text-[0.62rem] font-semibold uppercase tracking-wider text-black opacity-0 transition-all duration-500 ease-out [transform:translateY(-6px)] group-hover:opacity-100 group-hover:[transform:translateY(0)]">
-          Visitar
-          <ArrowUpRight className="h-3 w-3" strokeWidth={2.5} />
-        </div>
+            {/* Selo "Visitar" — entra com fade + slide no hover */}
+            <div className="pointer-events-none absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 font-mono text-[0.62rem] font-semibold uppercase tracking-wider text-black opacity-0 transition-all duration-500 ease-out [transform:translateY(-6px)] group-hover:opacity-100 group-hover:[transform:translateY(0)]">
+              Visitar
+              <ArrowUpRight className="h-3 w-3" strokeWidth={2.5} />
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Texto + chips de tema */}
-      <div className="mt-[clamp(0.85rem,1.4vw,1.15rem)] transition-transform duration-500 ease-out group-hover:translate-x-1">
+      {/* Texto + chips de tema (esmaecidos no "Em breve") */}
+      <div
+        className={
+          comingSoon
+            ? 'mt-[clamp(0.85rem,1.4vw,1.15rem)] opacity-50'
+            : 'mt-[clamp(0.85rem,1.4vw,1.15rem)] transition-transform duration-500 ease-out group-hover:translate-x-1'
+        }
+      >
         <p className="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-white/50">{tagline}</p>
         <h3 className="mt-1.5 flex items-center gap-2 font-display text-lg font-semibold leading-tight text-white">
           {title}
-          <ArrowUpRight
-            className="h-4 w-4 shrink-0 text-white/40 transition-all duration-500 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white"
-            strokeWidth={2}
-          />
+          {!comingSoon && (
+            <ArrowUpRight
+              className="h-4 w-4 shrink-0 text-white/40 transition-all duration-500 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white"
+              strokeWidth={2}
+            />
+          )}
         </h3>
         <p className="mt-2 line-clamp-2 max-w-[46ch] text-sm leading-relaxed text-white/60">{description}</p>
         <div className="mt-3.5 flex flex-wrap gap-1.5">
@@ -299,6 +317,32 @@ function ThemeShowcaseCard({ title, tagline, description, href, image, video, th
           ))}
         </div>
       </div>
+    </>
+  );
+
+  // "Em breve": card desabilitado (não navega, sem hover/foco), apenas informativo.
+  if (comingSoon) {
+    return (
+      <div
+        aria-label={`${title} — em breve`}
+        className="block cursor-default rounded-2xl border border-white/10 bg-white/[0.02] p-[clamp(1rem,1.8vw,1.5rem)] shadow-[0_16px_50px_-30px_rgba(0,0,0,0.9)]"
+      >
+        {inner}
+      </div>
+    );
+  }
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      onMouseEnter={playPreview}
+      onMouseLeave={stopPreview}
+      className="group block rounded-2xl border border-white/12 bg-white/[0.03] p-[clamp(1rem,1.8vw,1.5rem)] shadow-[0_16px_50px_-30px_rgba(0,0,0,0.9)] transition-[transform,border-color,box-shadow] duration-500 ease-out hover:-translate-y-1 hover:border-white/25 hover:shadow-[0_32px_80px_-40px_rgba(0,0,0,0.95)] focus:outline-none focus-visible:border-white/40"
+      aria-label={`Abrir ${title} em uma nova aba`}
+    >
+      {inner}
     </a>
   );
 }
@@ -327,15 +371,35 @@ function ScrollNav() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-    // Cada seção ocupa exatamente uma viewport (o motor de scroll fixa/encaixa
-    // os painéis em 100vh). Para "trocar de página por completo", saltamos para
-    // o próximo múltiplo inteiro de innerHeight — assim a próxima seção fica 100%
-    // na tela, não importa a posição em que o botão foi clicado.
+
     const vh = window.innerHeight;
     const maxScroll = document.documentElement.scrollHeight - vh;
-    const currentPage = Math.floor(window.scrollY / vh + 0.0001);
-    const target = Math.min((currentPage + 1) * vh, maxScroll);
-    window.scrollTo({ top: target, behavior: 'smooth' });
+    const isDesktop = window.matchMedia('(min-width: 1024px)').matches;
+    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let target: number;
+    if (isDesktop && !reduced) {
+      // Desktop com pin: cada seção ocupa exatamente uma viewport. Saltamos para
+      // o próximo múltiplo inteiro de innerHeight — a próxima seção fica 100% na
+      // tela, não importa a posição em que o botão foi clicado.
+      const currentPage = Math.floor(window.scrollY / vh + 0.0001);
+      target = (currentPage + 1) * vh;
+    } else {
+      // Mobile / reduced-motion: sem pin, as seções ficam empilhadas em scroll
+      // nativo e com alturas variáveis (barra de endereço, conteúdo maior que a
+      // tela). Multiplicar por innerHeight cairia em pontos aleatórios, então
+      // saltamos para o TOPO real da próxima seção.
+      const sections = Array.from(
+        document.querySelectorAll<HTMLElement>('[data-flow-section]'),
+      );
+      const tops = sections.map((el) =>
+        Math.round(el.getBoundingClientRect().top + window.scrollY),
+      );
+      const next = tops.find((t) => t > window.scrollY + 4);
+      target = next ?? maxScroll;
+    }
+
+    window.scrollTo({ top: Math.min(target, maxScroll), behavior: 'smooth' });
   };
 
   return (
@@ -349,6 +413,23 @@ function ScrollNav() {
         strokeWidth={2.2}
       />
     </button>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Bordinha da cor da página anterior                                        */
+/*  No desktop o efeito vem da rotação (a seção que entra revela a anterior    */
+/*  no topo). No mobile não há pin/rotação, então recriamos a "bordinha" com   */
+/*  uma faixa estática no topo — visível só abaixo de lg.                      */
+/* -------------------------------------------------------------------------- */
+
+function PrevEdge({ color }: { color: string }) {
+  return (
+    <div
+      className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[clamp(6px,1vh,12px)] lg:hidden"
+      style={{ backgroundColor: color }}
+      aria-hidden
+    />
   );
 }
 
@@ -402,17 +483,18 @@ const themeShowcases = [
     video: '/images/cincotemas/switcher-demo.mp4',
     themes: ['Fotografia', 'Chef', 'Arquitetura', 'DJ', 'Ateliê'],
   },
-  // Placeholder — duplicado só para visualizar o layout com dois cards.
-  // Substituir pelos dados do segundo site multitema quando ele ficar pronto.
+  // Segundo site multitema — ainda em produção. Fica desfocado/desabilitado com
+  // selo "Em breve". Substituir os campos pelos dados reais quando ficar pronto.
   {
-    title: 'Five Themes',
-    tagline: 'Um template · cinco identidades',
+    title: 'Em breve',
+    tagline: 'Novo template multitema',
     description:
-      'A base do estúdio Larissa Wand reimaginada em cinco universos. Um seletor troca cores, tipografia e clima — e o mesmo site vira outro negócio, sem trocar de página.',
-    href: 'https://fivethemes.vercel.app/',
+      'Mais um molde multitema a caminho — outros temas, a mesma troca de identidade ao vivo. Em breve por aqui.',
+    href: '#',
     image: '/images/cincotemas/capa-5-temas.png',
     video: '/images/cincotemas/switcher-demo.mp4',
-    themes: ['Fotografia', 'Chef', 'Arquitetura', 'DJ', 'Ateliê'],
+    themes: ['Em breve'],
+    comingSoon: true,
   },
 ];
 
@@ -553,6 +635,7 @@ export default function Home() {
 
         {/* Seção 02 — Templates Multitema (Azul — camisa) */}
         <FlowSection aria-label="Templates Multitema" style={{ backgroundColor: '#1C3A5E', color: '#fff' }}>
+          <PrevEdge color="#1C3A5E" />
           <SectionHead
             label="Um molde · Várias identidades"
             kicker="Camaleão"
@@ -568,6 +651,7 @@ export default function Home() {
 
         {/* Seção 03 — Soluções Comerciais (Verde — encostas) */}
         <FlowSection aria-label="Soluções Comerciais" style={{ backgroundColor: '#273A22', color: '#fff' }}>
+          <PrevEdge color="#1C3A5E" />
           <SectionHead
             label="Negócios & Landing Pages"
             kicker="Comercial"
@@ -583,6 +667,7 @@ export default function Home() {
 
         {/* Seção 04 — Gastronomia (Marrom — ruínas/terra) */}
         <FlowSection aria-label="Gastronomia" style={{ backgroundColor: '#3A271B', color: '#fff' }}>
+          <PrevEdge color="#273A22" />
           <SectionHead
             label="Gastronomia & Cafés"
             kicker="Sabor"
@@ -598,6 +683,7 @@ export default function Home() {
 
         {/* Seção 05 — Portfólios e Estúdios (Azul — camisa) */}
         <FlowSection aria-label="Portfólios e Estúdios" style={{ backgroundColor: '#1C3A5E', color: '#fff' }}>
+          <PrevEdge color="#3A271B" />
           <SectionHead
             label="Estúdios Criativos"
             kicker="Visual"
@@ -613,6 +699,7 @@ export default function Home() {
 
         {/* Seção 06 — Gaming Projects (Verde — encostas) */}
         <FlowSection aria-label="Gaming Projects" style={{ backgroundColor: '#273A22', color: '#fff' }}>
+          <PrevEdge color="#1C3A5E" />
           <SectionHead
             label="Gaming & Comunidade"
             kicker="Paixões"
@@ -630,6 +717,7 @@ export default function Home() {
 
         {/* Seção 07 — Contato (Preto) */}
         <FlowSection aria-label="Contato" style={{ backgroundColor: '#000000', color: '#fff' }}>
+          <PrevEdge color="#273A22" />
           <div className="flex items-center justify-between font-mono text-[0.7rem] uppercase tracking-[0.25em] text-white/60">
             <span>Contato</span>
             <span className="hidden sm:inline">Vamos conversar</span>
