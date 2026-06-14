@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { ArrowUpRight, Check, ChevronDown, Clock, Mail } from 'lucide-react';
+import { ArrowUpRight, Check, ChevronDown, Clock, Layers, Mail } from 'lucide-react';
 import FlowArt, { FlowSection } from '@/components/ui/story-scroll';
 
 /* -------------------------------------------------------------------------- */
@@ -50,9 +50,11 @@ interface ProjectCardProps {
   accent: string;
   /** Site já no ar, em uso por um cliente real — exibe o selo "No ar". */
   live?: boolean;
+  /** Selo indicando que o projeto nasceu de um template multitema (ex.: "Five Themes"). */
+  templateTag?: string;
 }
 
-function ProjectCard({ title, subtitle, href, image, accent, live }: ProjectCardProps) {
+function ProjectCard({ title, subtitle, href, image, accent, live, templateTag }: ProjectCardProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.3);
   // O <iframe> ao vivo só é montado em dispositivos com hover real (desktop).
@@ -154,6 +156,14 @@ function ProjectCard({ title, subtitle, href, image, accent, live }: ProjectCard
           Visitar
           <ArrowUpRight className="h-3 w-3" strokeWidth={2.5} />
         </div>
+
+        {/* Selo de template — indica que o projeto saiu de um molde multitema. */}
+        {templateTag && (
+          <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-full border border-white/25 bg-black/55 px-2.5 py-1 font-mono text-[0.55rem] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
+            <Layers className="h-3 w-3" strokeWidth={2.5} />
+            {templateTag}
+          </div>
+        )}
       </div>
 
       {/* Legenda do card — desliza levemente e ganha realce no hover */}
@@ -477,42 +487,42 @@ const themeShowcases = [
     title: 'Five Themes',
     tagline: 'Um template · cinco identidades',
     description:
-      'A base do estúdio Larissa Wand reimaginada em cinco universos. Um seletor troca cores, tipografia e clima — e o mesmo site vira outro negócio, sem trocar de página.',
+      'A base de um estúdio criativo reimaginada em cinco universos. Um seletor troca cores, tipografia e clima — e o mesmo site vira outro negócio, sem trocar de página.',
     href: 'https://fivethemes.vercel.app/',
     image: '/images/cincotemas/capa-5-temas.png',
     video: '/images/cincotemas/switcher-demo.mp4',
     themes: ['Fotografia', 'Chef', 'Arquitetura', 'DJ', 'Ateliê'],
   },
-  // Segundo site multitema — ainda em produção. Fica desfocado/desabilitado com
-  // selo "Em breve". Substituir os campos pelos dados reais quando ficar pronto.
+  // Segundo template multitema carro-chefe — mesmo molde do Five Themes.
   {
-    title: 'Em breve',
-    tagline: 'Novo template multitema',
+    title: 'Cinq Thèmes',
+    tagline: 'Um template · cinco identidades',
     description:
-      'Mais um molde multitema a caminho — outros temas, a mesma troca de identidade ao vivo. Em breve por aqui.',
-    href: '#',
-    image: '/images/cincotemas/capa-5-temas.png',
-    video: '/images/cincotemas/switcher-demo.mp4',
-    themes: ['Em breve'],
-    comingSoon: true,
+      'Um portfólio criativo reimaginado em cinco identidades. Um seletor troca cores, tipografia e clima — a mesma estrutura assume outro universo, sem trocar de página.',
+    href: 'https://cinqthemes.vercel.app/',
+    image: '/images/cinqthemes/capa-5-temas.png',
+    video: '/images/cinqthemes/switcher-demo.mp4',
+    themes: ['Preto', 'Terra', 'Azul', 'Noir', 'Pulse'],
   },
 ];
 
 const commercialProjects = [
   { title: 'Recanto da Paz', subtitle: 'Hotelaria · Chácara', href: 'https://recanto-da-paz.vercel.app/', image: '/images/chacararecantodapaz.png', live: true },
   { title: 'Terapia Ocupacional', subtitle: 'Saúde · Bem-estar', href: 'https://adapteseterapiaocupacional.com.br/', image: '/images/terapiaocupacional.png', live: true },
-  { title: 'Azul Marina', subtitle: 'Imobiliário · Beira-mar', href: 'https://azulmarina.vercel.app/', image: '/images/azulmarina.png' },
-  { title: 'MARÉ Ateliê', subtitle: 'Moda · Slow fashion', href: 'https://mare-atelie.vercel.app/', image: '/images/mare.png' },
+  { title: 'Azul Marina', subtitle: 'Imobiliário · Beira-mar', href: 'https://azulmarina.vercel.app/', image: '/images/azulmarina.png', templateTag: 'Template Cinq Thèmes' },
+  // Oculto temporariamente a pedido — reativar quando quiser exibir de novo.
+  // { title: 'MARÉ Ateliê', subtitle: 'Moda · Slow fashion', href: 'https://mare-atelie.vercel.app/', image: '/images/mare.png' },
 ];
 
 const gastronomyProjects = [
-  { title: 'Crazy Cow', subtitle: 'Lanchonete · Burgers', href: 'https://crazycow.vercel.app/', image: '/images/crazycow.png' },
-  { title: 'Altura', subtitle: 'Cafeteria · Torrefação', href: 'https://alturacafes.vercel.app/', image: '/images/altura.png' },
   { title: 'Pizzaria Dello', subtitle: 'Pizzaria · Forno a lenha', href: 'https://pizzariadello.vercel.app/', image: '/images/pizzariadello.png' },
+  { title: 'Altura', subtitle: 'Cafeteria · Torrefação', href: 'https://alturacafes.vercel.app/', image: '/images/altura.png' },
+  // Oculto temporariamente a pedido — reativar quando quiser exibir de novo.
+  // { title: 'Crazy Cow', subtitle: 'Lanchonete · Burgers', href: 'https://crazycow.vercel.app/', image: '/images/crazycow.png' },
 ];
 
 const studioProjects = [
-  { title: 'Larissa Wand', subtitle: 'Fotografia', href: 'https://projetolk.vercel.app/', image: '/images/larissawand.png' },
+  { title: 'Larissa Wand', subtitle: 'Fotografia', href: 'https://projetolk.vercel.app/', image: '/images/larissawand.png', templateTag: 'Template Five Themes' },
   { title: 'Estúdio Tezzo', subtitle: 'Fotografia', href: 'https://estudiotezzo.vercel.app/', image: '/images/tezzo.png' },
   { title: 'Estúdio Vasconcelos', subtitle: 'Fotografia', href: 'https://estudiovasconcelos.vercel.app/', image: '/images/vasconcelos.png' },
   { title: 'Estúdio Marquetti', subtitle: 'Fotografia', href: 'https://estudiomarquetti.vercel.app/', image: '/images/marchetti.png' },
@@ -520,10 +530,11 @@ const studioProjects = [
   // { title: 'Mara Valente', subtitle: 'Fotografia · Casamentos', href: 'https://maravalente.vercel.app/', image: '/images/maravalente.png' },
 ];
 
-const gamingProjects = [
-  { title: 'Teemo LoL', subtitle: 'League of Legends', href: 'https://teemo-lol.vercel.app/', image: '/images/teemo.png' },
-  { title: 'Valorant Agents', subtitle: 'Valorant · Roster', href: 'https://valorant-agents-list.vercel.app/', image: '/images/valorant.png' },
-];
+// Seção Games oculta temporariamente a pedido — reativar quando quiser exibir de novo.
+// const gamingProjects = [
+//   { title: 'Teemo LoL', subtitle: 'League of Legends', href: 'https://teemo-lol.vercel.app/', image: '/images/teemo.png' },
+//   { title: 'Valorant Agents', subtitle: 'Valorant · Roster', href: 'https://valorant-agents-list.vercel.app/', image: '/images/valorant.png' },
+// ];
 
 const contacts = [
   {
@@ -697,7 +708,7 @@ export default function Home() {
           </div>
         </FlowSection>
 
-        {/* Seção 06 — Gaming Projects (Verde — encostas) */}
+        {/* Seção 06 — Gaming Projects — oculta temporariamente a pedido (reativar quando quiser exibir de novo)
         <FlowSection aria-label="Gaming Projects" style={{ backgroundColor: '#273A22', color: '#fff' }}>
           <PrevEdge color="#1C3A5E" />
           <SectionHead
@@ -707,17 +718,18 @@ export default function Home() {
             description="Unindo desenvolvimento web com meus jogos favoritos."
             divider="border-white/20"
           />
-          {/* Mesmo grid das outras seções (4 col no desktop) p/ manter o tamanho de card */}
+          Mesmo grid das outras seções (4 col no desktop) p/ manter o tamanho de card
           <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
             {gamingProjects.map((p) => (
               <ProjectCard key={p.href} {...p} accent="#3E5A33" />
             ))}
           </div>
         </FlowSection>
+        */}
 
         {/* Seção 07 — Contato (Preto) */}
         <FlowSection aria-label="Contato" style={{ backgroundColor: '#000000', color: '#fff' }}>
-          <PrevEdge color="#273A22" />
+          <PrevEdge color="#1C3A5E" />
           <div className="flex items-center justify-between font-mono text-[0.7rem] uppercase tracking-[0.25em] text-white/60">
             <span>Contato</span>
             <span className="hidden sm:inline">Vamos conversar</span>
