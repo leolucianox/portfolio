@@ -127,6 +127,31 @@ const FlowArt: React.FC<FlowArtProps> = ({
         }
       });
 
+      // Snap suave: ao parar de rolar (mouse/trackpad), o scroll é puxado para a
+      // seção mais próxima e encaixa o início dela no topo da tela. Como cada
+      // seção ocupa exatamente uma viewport, basta arredondar para o múltiplo de
+      // innerHeight mais próximo. Dispara só no fim da rolagem (delay), então não
+      // briga com a rotação — e nunca deixa uma virada parada no meio do caminho.
+      triggers.push(
+        ScrollTrigger.create({
+          trigger: containerRef.current,
+          start: 'top top',
+          end: () => ScrollTrigger.maxScroll(window),
+          snap: {
+            snapTo: (value, self) => {
+              const range = self ? self.end - self.start : 0;
+              if (range <= 0) return value;
+              const vh = window.innerHeight;
+              const snapped = Math.round((value * range) / vh) * vh;
+              return Math.min(1, Math.max(0, snapped / range));
+            },
+            duration: { min: 0.15, max: 0.4 },
+            delay: 0.06,
+            ease: 'power1.inOut',
+          },
+        }),
+      );
+
       ScrollTrigger.refresh();
 
       return () => {

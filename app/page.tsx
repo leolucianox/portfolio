@@ -427,23 +427,6 @@ function ScrollNav() {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Bordinha da cor da página anterior                                        */
-/*  No desktop o efeito vem da rotação (a seção que entra revela a anterior    */
-/*  no topo). No mobile não há pin/rotação, então recriamos a "bordinha" com   */
-/*  uma faixa estática no topo — visível só abaixo de lg.                      */
-/* -------------------------------------------------------------------------- */
-
-function PrevEdge({ color }: { color: string }) {
-  return (
-    <div
-      className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[clamp(6px,1vh,12px)] lg:hidden"
-      style={{ backgroundColor: color }}
-      aria-hidden
-    />
-  );
-}
-
-/* -------------------------------------------------------------------------- */
 /*  Cabeçalho de seção reutilizável                                           */
 /* -------------------------------------------------------------------------- */
 
@@ -489,8 +472,8 @@ const themeShowcases = [
     description:
       'A base de um estúdio criativo reimaginada em cinco universos. Um seletor troca cores, tipografia e clima — e o mesmo site vira outro negócio, sem trocar de página.',
     href: 'https://fivethemes.vercel.app/',
-    image: '/images/cincotemas/capa-5-temas.png',
-    video: '/images/cincotemas/switcher-demo.mp4',
+    image: '/images/fivethemes/capa-5-temas.png',
+    video: '/images/fivethemes/switcher-demo.mp4',
     themes: ['Fotografia', 'Chef', 'Arquitetura', 'DJ', 'Ateliê'],
   },
   // Segundo template multitema carro-chefe — mesmo molde do Five Themes.
@@ -504,6 +487,17 @@ const themeShowcases = [
     video: '/images/cinqthemes/switcher-demo.mp4',
     themes: ['Preto', 'Terra', 'Azul', 'Noir', 'Pulse'],
   },
+  // Terceiro template multitema carro-chefe — versão gastronômica do mesmo molde.
+  {
+    title: 'Cinco Temas',
+    tagline: 'Um template · cinco identidades',
+    description:
+      'Um restaurante reimaginado em cinco casas — da pizzaria de forno a lenha ao sushi. Um seletor troca cores, tipografia e clima e o mesmo site vira outro negócio, sem trocar de página.',
+    href: 'https://cincotemas.vercel.app/',
+    image: '/images/cincotemas/capa-5-temas.png',
+    video: '/images/cincotemas/switcher-demo.mp4',
+    themes: ['Pizzaria Dello', 'Toma', 'Verde', 'Crazy Cow', 'Sakana'],
+  },
 ];
 
 const commercialProjects = [
@@ -515,7 +509,7 @@ const commercialProjects = [
 ];
 
 const gastronomyProjects = [
-  { title: 'Pizzaria Dello', subtitle: 'Pizzaria · Forno a lenha', href: 'https://pizzariadello.vercel.app/', image: '/images/pizzariadello.png' },
+  { title: 'Pizzaria Dello', subtitle: 'Pizzaria · Forno a lenha', href: 'https://pizzariadello.vercel.app/', image: '/images/pizzariadello.png', templateTag: 'Template Cinco Temas' },
   { title: 'Altura', subtitle: 'Cafeteria · Torrefação', href: 'https://alturacafes.vercel.app/', image: '/images/altura.png' },
   // Oculto temporariamente a pedido — reativar quando quiser exibir de novo.
   // { title: 'Crazy Cow', subtitle: 'Lanchonete · Burgers', href: 'https://crazycow.vercel.app/', image: '/images/crazycow.png' },
@@ -583,15 +577,6 @@ export default function Home() {
 
         {/* Seção 01 — Hero (Preto) */}
         <FlowSection aria-label="Apresentação" style={{ backgroundColor: '#000000', color: '#fff' }}>
-          {/* Faixa colorida no topo do Hero. Em cada virada de página, a seção  */}
-          {/* que gira por cima revela uma faixa da cor da seção anterior no     */}
-          {/* topo. Como o Hero é preto (= fundo da página), essa faixa some na  */}
-          {/* primeira transição; esta barra garante a mesma "bordinha" colorida */}
-          {/* ao entrar na Multitema (cor ajustável). */}
-          <div
-            className="pointer-events-none absolute inset-x-0 top-0 z-20 h-[clamp(6px,1vh,12px)] bg-[#1C3A5E]"
-            aria-hidden
-          />
           <div className="flex items-center justify-between font-mono text-[0.7rem] uppercase tracking-[0.25em] text-white/60">
             <span>Leonardo Luciano</span>
             <span className="hidden sm:inline">Portfólio Digital</span>
@@ -646,14 +631,13 @@ export default function Home() {
 
         {/* Seção 02 — Templates Multitema (Azul — camisa) */}
         <FlowSection aria-label="Templates Multitema" style={{ backgroundColor: '#1C3A5E', color: '#fff' }}>
-          <PrevEdge color="#1C3A5E" />
           <SectionHead
             label="Um molde · Várias identidades"
             kicker="Camaleão"
             title="Templates Multitema"
             description="Um único template que veste vários negócios: um seletor troca cores, tipografia e clima e o mesmo site vira outro. Passe o mouse e veja a troca de temas acontecer ao vivo."
           />
-          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-1 gap-[clamp(1.5rem,2.5vw,2rem)] lg:grid-cols-2">
+          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-1 gap-[clamp(1.5rem,2.5vw,2rem)] lg:grid-cols-3">
             {themeShowcases.map((p, i) => (
               <ThemeShowcaseCard key={i} {...p} accent="#2E5C92" />
             ))}
@@ -662,7 +646,6 @@ export default function Home() {
 
         {/* Seção 03 — Soluções Comerciais (Verde — encostas) */}
         <FlowSection aria-label="Soluções Comerciais" style={{ backgroundColor: '#273A22', color: '#fff' }}>
-          <PrevEdge color="#1C3A5E" />
           <SectionHead
             label="Negócios & Landing Pages"
             kicker="Comercial"
@@ -678,7 +661,6 @@ export default function Home() {
 
         {/* Seção 04 — Gastronomia (Marrom — ruínas/terra) */}
         <FlowSection aria-label="Gastronomia" style={{ backgroundColor: '#3A271B', color: '#fff' }}>
-          <PrevEdge color="#273A22" />
           <SectionHead
             label="Gastronomia & Cafés"
             kicker="Sabor"
@@ -694,7 +676,6 @@ export default function Home() {
 
         {/* Seção 05 — Portfólios e Estúdios (Azul — camisa) */}
         <FlowSection aria-label="Portfólios e Estúdios" style={{ backgroundColor: '#1C3A5E', color: '#fff' }}>
-          <PrevEdge color="#3A271B" />
           <SectionHead
             label="Estúdios Criativos"
             kicker="Visual"
@@ -710,7 +691,6 @@ export default function Home() {
 
         {/* Seção 06 — Gaming Projects — oculta temporariamente a pedido (reativar quando quiser exibir de novo)
         <FlowSection aria-label="Gaming Projects" style={{ backgroundColor: '#273A22', color: '#fff' }}>
-          <PrevEdge color="#1C3A5E" />
           <SectionHead
             label="Gaming & Comunidade"
             kicker="Paixões"
@@ -729,7 +709,6 @@ export default function Home() {
 
         {/* Seção 07 — Contato (Preto) */}
         <FlowSection aria-label="Contato" style={{ backgroundColor: '#000000', color: '#fff' }}>
-          <PrevEdge color="#1C3A5E" />
           <div className="flex items-center justify-between font-mono text-[0.7rem] uppercase tracking-[0.25em] text-white/60">
             <span>Contato</span>
             <span className="hidden sm:inline">Vamos conversar</span>

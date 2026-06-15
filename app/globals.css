@@ -19,6 +19,22 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Snap suave no mobile/touch (abaixo de lg, onde não há pin do GSAP): ao rolar
+   ou passar o dedo, a rolagem é puxada de leve para o início da seção mais
+   próxima, deixando-o grudado no topo da tela. "proximity" (não "mandatory")
+   mantém o snap leve — só encaixa quando você já está perto. Respeita quem
+   prefere menos movimento. No desktop o encaixe é feito pelo GSAP. */
+@media (max-width: 1023px) and (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-snap-type: y proximity;
+  }
+
+  [data-flow-section] {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+}
+
 body {
   font-family: var(--font-sans);
   background-color: #000;
