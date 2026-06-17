@@ -467,17 +467,6 @@ function SectionHead({ label, kicker, title, description, divider = 'border-whit
 // Para adicionar outro no mesmo molde, basta incluir mais um objeto aqui.
 const themeShowcases = [
   {
-    title: 'Five Themes',
-    tagline: 'Um template · cinco identidades',
-    description:
-      'A base de um estúdio criativo reimaginada em cinco universos. Um seletor troca cores, tipografia e clima — e o mesmo site vira outro negócio, sem trocar de página.',
-    href: 'https://fivethemes.vercel.app/',
-    image: '/images/fivethemes/capa-5-temas.png',
-    video: '/images/fivethemes/switcher-demo.mp4',
-    themes: ['Fotografia', 'Chef', 'Arquitetura', 'DJ', 'Ateliê'],
-  },
-  // Segundo template multitema carro-chefe — mesmo molde do Five Themes.
-  {
     title: 'Cinq Thèmes',
     tagline: 'Um template · cinco identidades',
     description:
@@ -487,7 +476,7 @@ const themeShowcases = [
     video: '/images/cinqthemes/switcher-demo.mp4',
     themes: ['Preto', 'Terra', 'Azul', 'Noir', 'Pulse'],
   },
-  // Terceiro template multitema carro-chefe — versão gastronômica do mesmo molde.
+  // Versão gastronômica do mesmo molde.
   {
     title: 'Cinco Temas',
     tagline: 'Um template · cinco identidades',
@@ -497,6 +486,18 @@ const themeShowcases = [
     image: '/images/cincotemas/capa-5-temas.png',
     video: '/images/cincotemas/switcher-demo.mp4',
     themes: ['Pizzaria Dello', 'Toma', 'Verde', 'Crazy Cow', 'Sakana'],
+  },
+  // Terceiro lugar: desativado por hora — card desfocado com selo "Em breve".
+  {
+    title: 'Five Themes',
+    tagline: 'Um template · cinco identidades',
+    description:
+      'A base de um estúdio criativo reimaginada em cinco universos. Um seletor troca cores, tipografia e clima — e o mesmo site vira outro negócio, sem trocar de página.',
+    href: 'https://fivethemes.vercel.app/',
+    image: '/images/fivethemes/capa-5-temas.png',
+    video: '/images/fivethemes/switcher-demo.mp4',
+    themes: ['Fotografia', 'Chef', 'Arquitetura', 'DJ', 'Ateliê'],
+    comingSoon: true,
   },
 ];
 
