@@ -517,7 +517,8 @@ const gastronomyProjects = [
 ];
 
 const studioProjects = [
-  { title: 'Larissa Wand', subtitle: 'Fotografia', href: 'https://projetolk.vercel.app/', image: '/images/larissawand.png', templateTag: 'Template Five Themes' },
+  // Nome genérico + tag de template oculta temporariamente — reativar o templateTag quando liberar.
+  { title: 'Tatuagem & Fotografia Autoral', subtitle: 'Tatuagem · Fotografia', href: 'https://projetolk.vercel.app/', image: '/images/larissawand.png' },
   { title: 'Estúdio Tezzo', subtitle: 'Fotografia', href: 'https://estudiotezzo.vercel.app/', image: '/images/tezzo.png' },
   { title: 'Estúdio Vasconcelos', subtitle: 'Fotografia', href: 'https://estudiovasconcelos.vercel.app/', image: '/images/vasconcelos.png' },
   { title: 'Estúdio Marquetti', subtitle: 'Fotografia', href: 'https://estudiomarquetti.vercel.app/', image: '/images/marchetti.png' },
