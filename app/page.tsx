@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { ArrowUpRight, Check, ChevronDown, Clock, Layers, Mail } from 'lucide-react';
+import { ArrowUpRight, Check, ChevronDown, Mail } from 'lucide-react';
 import FlowArt, { FlowSection } from '@/components/ui/story-scroll';
 
 /* -------------------------------------------------------------------------- */
@@ -50,11 +50,11 @@ interface ProjectCardProps {
   accent: string;
   /** Site já no ar, em uso por um cliente real — exibe o selo "No ar". */
   live?: boolean;
-  /** Selo indicando que o projeto nasceu de um template multitema (ex.: "Five Themes"). */
-  templateTag?: string;
+  /** Favorito do desenvolvedor — exibe o selo "Dev's Pick" com estrela. */
+  pick?: boolean;
 }
 
-function ProjectCard({ title, subtitle, href, image, accent, live, templateTag }: ProjectCardProps) {
+function ProjectCard({ title, subtitle, href, image, accent, live, pick }: ProjectCardProps) {
   const stageRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.3);
   // O <iframe> ao vivo só é montado em dispositivos com hover real (desktop).
@@ -157,11 +157,11 @@ function ProjectCard({ title, subtitle, href, image, accent, live, templateTag }
           <ArrowUpRight className="h-3 w-3" strokeWidth={2.5} />
         </div>
 
-        {/* Selo de template — indica que o projeto saiu de um molde multitema. */}
-        {templateTag && (
-          <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-full border border-white/25 bg-black/55 px-2.5 py-1 font-mono text-[0.55rem] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
-            <Layers className="h-3 w-3" strokeWidth={2.5} />
-            {templateTag}
+        {/* Selo "Favorito" — favorito do desenvolvedor, com estrela (canto inferior esquerdo). */}
+        {pick && (
+          <div className="absolute bottom-3 left-3 z-10 flex items-center gap-1.5 rounded-full border border-amber-300/45 bg-black/55 px-2.5 py-1 font-mono text-[0.55rem] font-semibold uppercase tracking-wider text-amber-100 backdrop-blur-sm">
+            <span aria-hidden className="text-[0.72rem] leading-none">⭐</span>
+            Favorito
           </div>
         )}
       </div>
@@ -177,182 +177,6 @@ function ProjectCard({ title, subtitle, href, image, accent, live, templateTag }
           strokeWidth={2}
         />
       </div>
-    </a>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/*  ThemeShowcaseCard                                                          */
-/*  Destaque para templates "multitema": um mesmo site que troca de identidade */
-/*  por completo (cores, tipografia, clima). Capa estática por padrão; no hover */
-/*  (desktop) toca um vídeo curto mostrando a troca de temas ao vivo. No mobile */
-/*  fica só a capa — mesma lógica anti-crash do ProjectCard (toque não tem      */
-/*  hover e mídia pesada derruba o Safari).                                     */
-/* -------------------------------------------------------------------------- */
-
-interface ThemeShowcaseProps {
-  title: string;
-  /** Linha-fina acima do título (ex.: "Um template, cinco identidades"). */
-  tagline: string;
-  description: string;
-  href: string;
-  /** Capa estática (primeira tela do site). */
-  image: string;
-  /** Vídeo curto da troca de temas — tocado no hover (desktop). */
-  video: string;
-  /** Temas disponíveis dentro do template — viram chips abaixo do texto. */
-  themes: string[];
-  /** Cor de destaque do fallback, harmonizada com a seção. */
-  accent: string;
-  /** Card ainda não publicado: desfocado, desabilitado, com selo "Em breve". */
-  comingSoon?: boolean;
-}
-
-function ThemeShowcaseCard({ title, tagline, description, href, image, video, themes, accent, comingSoon }: ThemeShowcaseProps) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [canHover, setCanHover] = useState(false);
-
-  useEffect(() => {
-    const mq = window.matchMedia('(hover: hover) and (pointer: fine)');
-    const update = () => setCanHover(mq.matches);
-    update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
-  }, []);
-
-  const playPreview = () => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.currentTime = 0;
-    v.play().catch(() => {});
-  };
-  const stopPreview = () => {
-    videoRef.current?.pause();
-  };
-
-  // Conteúdo interno compartilhado entre o card ativo (<a>) e o "Em breve" (<div>).
-  const inner = (
-    <>
-      {/* Palco do preview — capa por padrão; vídeo da troca de temas no hover.   */}
-      {/* max-h em vh garante que dois cards + cabeçalho caibam em ~100vh,         */}
-      {/* mantendo a seção do mesmo tamanho das outras (troca de página no scroll). */}
-      <div className="relative aspect-[16/10] max-h-[34vh] w-full overflow-hidden rounded-xl border border-white/12 bg-white/[0.03]">
-        {/* Camada-base: gradiente de fallback */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(120% 120% at 0% 0%, ${accent}55 0%, transparent 55%), linear-gradient(135deg, ${accent} 0%, #050505 90%)`,
-          }}
-          aria-hidden
-        />
-
-        {/* Vídeo da troca de temas — só em desktop com hover e card ativo */}
-        {canHover && !comingSoon && (
-          <video
-            ref={videoRef}
-            src={video}
-            muted
-            loop
-            playsInline
-            preload="metadata"
-            tabIndex={-1}
-            aria-hidden
-            className="absolute inset-0 h-full w-full object-cover object-top opacity-0 transition-opacity duration-500 ease-out group-hover:opacity-100"
-          />
-        )}
-
-        {/* Capa local — sempre visível; some no hover revelando o vídeo.        */}
-        {/* No "Em breve" fica desfocada e escurecida (preview indisponível).     */}
-        <Image
-          src={image}
-          alt={`Página inicial do template ${title} (temas: ${themes.join(', ')}), desenvolvido por Leonardo Luciano`}
-          fill
-          sizes="(max-width: 1024px) 100vw, 45vw"
-          className={
-            comingSoon
-              ? 'scale-105 object-cover object-top blur-[3px] brightness-[0.55] saturate-[0.7]'
-              : 'object-cover object-top transition-opacity duration-500 ease-out group-hover:opacity-0'
-          }
-        />
-
-        {comingSoon ? (
-          /* Selo "Em breve" — espelha o "No ar", em âmbar */
-          <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-full border border-amber-300/40 bg-amber-500/90 px-2.5 py-1 font-mono text-[0.6rem] font-semibold uppercase tracking-wider text-white shadow-[0_6px_18px_-6px_rgba(245,158,11,0.8)] backdrop-blur-sm">
-            <Clock className="h-3 w-3" strokeWidth={3} />
-            Em breve
-          </div>
-        ) : (
-          <>
-            {/* Selo multitema — quantos temas o template oferece */}
-            <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-full border border-white/25 bg-black/55 px-2.5 py-1 font-mono text-[0.6rem] font-semibold uppercase tracking-wider text-white backdrop-blur-sm">
-              {themes.length} temas
-            </div>
-
-            {/* Selo "Visitar" — entra com fade + slide no hover */}
-            <div className="pointer-events-none absolute right-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 font-mono text-[0.62rem] font-semibold uppercase tracking-wider text-black opacity-0 transition-all duration-500 ease-out [transform:translateY(-6px)] group-hover:opacity-100 group-hover:[transform:translateY(0)]">
-              Visitar
-              <ArrowUpRight className="h-3 w-3" strokeWidth={2.5} />
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Texto + chips de tema (esmaecidos no "Em breve") */}
-      <div
-        className={
-          comingSoon
-            ? 'mt-[clamp(0.85rem,1.4vw,1.15rem)] opacity-50'
-            : 'mt-[clamp(0.85rem,1.4vw,1.15rem)] transition-transform duration-500 ease-out group-hover:translate-x-1'
-        }
-      >
-        <p className="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-white/50">{tagline}</p>
-        <h3 className="mt-1.5 flex items-center gap-2 font-display text-lg font-semibold leading-tight text-white">
-          {title}
-          {!comingSoon && (
-            <ArrowUpRight
-              className="h-4 w-4 shrink-0 text-white/40 transition-all duration-500 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white"
-              strokeWidth={2}
-            />
-          )}
-        </h3>
-        <p className="mt-2 line-clamp-2 max-w-[46ch] text-sm leading-relaxed text-white/60">{description}</p>
-        <div className="mt-3.5 flex flex-wrap gap-1.5">
-          {themes.map((t) => (
-            <span
-              key={t}
-              className="rounded-full border border-white/15 bg-white/[0.04] px-2.5 py-1 font-mono text-[0.6rem] uppercase tracking-wider text-white/70"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-      </div>
-    </>
-  );
-
-  // "Em breve": card desabilitado (não navega, sem hover/foco), apenas informativo.
-  if (comingSoon) {
-    return (
-      <div
-        aria-label={`${title} — em breve`}
-        className="block cursor-default rounded-2xl border border-white/10 bg-white/[0.02] p-[clamp(1rem,1.8vw,1.5rem)] shadow-[0_16px_50px_-30px_rgba(0,0,0,0.9)]"
-      >
-        {inner}
-      </div>
-    );
-  }
-
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      onMouseEnter={playPreview}
-      onMouseLeave={stopPreview}
-      className="group block rounded-2xl border border-white/12 bg-white/[0.03] p-[clamp(1rem,1.8vw,1.5rem)] shadow-[0_16px_50px_-30px_rgba(0,0,0,0.9)] transition-[transform,border-color,box-shadow] duration-500 ease-out hover:-translate-y-1 hover:border-white/25 hover:shadow-[0_32px_80px_-40px_rgba(0,0,0,0.95)] focus:outline-none focus-visible:border-white/40"
-      aria-label={`Abrir ${title} em uma nova aba`}
-    >
-      {inner}
     </a>
   );
 }
@@ -460,77 +284,45 @@ function SectionHead({ label, kicker, title, description, divider = 'border-whit
 
 /* -------------------------------------------------------------------------- */
 /*  Dados                                                                     */
+/*  Para adicionar/editar um projeto, mexa nos arrays abaixo — cada item tem  */
+/*  title, subtitle, href e image (caminho em /images/...).                   */
 /* -------------------------------------------------------------------------- */
-
-// Templates "multitema": um mesmo molde que troca de identidade por completo.
-// Cada item tem capa + vídeo da troca de temas (em /images/<pasta>/).
-// Para adicionar outro no mesmo molde, basta incluir mais um objeto aqui.
-const themeShowcases = [
-  {
-    title: 'Cinq Thèmes',
-    tagline: 'Um template · cinco identidades',
-    description:
-      'Um portfólio criativo reimaginado em cinco identidades. Um seletor troca cores, tipografia e clima — a mesma estrutura assume outro universo, sem trocar de página.',
-    href: 'https://cinqthemes.vercel.app/',
-    image: '/images/cinqthemes/capa-5-temas.png',
-    video: '/images/cinqthemes/switcher-demo.mp4',
-    themes: ['Preto', 'Terra', 'Azul', 'Noir', 'Pulse'],
-  },
-  // Versão gastronômica do mesmo molde.
-  {
-    title: 'Cinco Temas',
-    tagline: 'Um template · cinco identidades',
-    description:
-      'Um restaurante reimaginado em cinco casas — da pizzaria de forno a lenha ao sushi. Um seletor troca cores, tipografia e clima e o mesmo site vira outro negócio, sem trocar de página.',
-    href: 'https://cincotemas.vercel.app/',
-    image: '/images/cincotemas/capa-5-temas.png',
-    video: '/images/cincotemas/switcher-demo.mp4',
-    themes: ['Pizzaria Dello', 'Toma', 'Verde', 'Crazy Cow', 'Sakana'],
-  },
-  // Terceiro lugar: desativado por hora — card desfocado com selo "Em breve".
-  {
-    title: 'Five Themes',
-    tagline: 'Um template · cinco identidades',
-    description:
-      'A base de um estúdio criativo reimaginada em cinco universos. Um seletor troca cores, tipografia e clima — e o mesmo site vira outro negócio, sem trocar de página.',
-    href: 'https://fivethemes.vercel.app/',
-    image: '/images/fivethemes/capa-5-temas.png',
-    video: '/images/fivethemes/switcher-demo.mp4',
-    themes: ['Fotografia', 'Chef', 'Arquitetura', 'DJ', 'Ateliê'],
-    comingSoon: true,
-  },
-];
 
 const commercialProjects = [
   { title: 'Recanto da Paz', subtitle: 'Hotelaria · Chácara', href: 'https://recanto-da-paz.vercel.app/', image: '/images/chacararecantodapaz.png', live: true },
   { title: 'Terapia Ocupacional', subtitle: 'Saúde · Bem-estar', href: 'https://adapteseterapiaocupacional.com.br/', image: '/images/terapiaocupacional.png', live: true },
-  { title: 'Azul Marina', subtitle: 'Imobiliário · Beira-mar', href: 'https://azulmarina.vercel.app/', image: '/images/azulmarina.png', templateTag: 'Template Cinq Thèmes' },
+  { title: 'Azul Marina', subtitle: 'Imobiliário · Beira-mar', href: 'https://azulmarina.vercel.app/', image: '/images/azulmarina.png', pick: true },
   // Oculto temporariamente a pedido — reativar quando quiser exibir de novo.
   // { title: 'MARÉ Ateliê', subtitle: 'Moda · Slow fashion', href: 'https://mare-atelie.vercel.app/', image: '/images/mare.png' },
 ];
 
+// Tatuagem & arte autoral — estúdios com portfólio + agendamento, o traço em primeiro plano.
+const tattooProjects = [
+  { title: 'Kane Voss', subtitle: 'Tatuagem · Estúdio', href: 'https://kanevoss.vercel.app/', image: '/images/kanevoss.png' },
+  { title: 'Larissa Wand', subtitle: 'Tatuagem · Fotografia', href: 'https://projetolk.vercel.app/', image: '/images/larissawand.png', pick: true },
+];
+
 const gastronomyProjects = [
-  { title: 'Pizzaria Dello', subtitle: 'Pizzaria · Forno a lenha', href: 'https://pizzariadello.vercel.app/', image: '/images/pizzariadello.png', templateTag: 'Template Cinco Temas' },
-  { title: 'Altura', subtitle: 'Cafeteria · Torrefação', href: 'https://alturacafes.vercel.app/', image: '/images/altura.png' },
+  { title: 'Pizzaria Dello', subtitle: 'Pizzaria · Forno a lenha', href: 'https://pizzariadello.vercel.app/', image: '/images/pizzariadello.png' },
+  { title: 'Altura Torrefação', subtitle: 'Cafeteria · Torrefação', href: 'https://alturacafes.vercel.app/', image: '/images/altura.png' },
+  { title: 'Fogo Brando', subtitle: 'Receitas · Passo a passo', href: 'https://fogobrando.vercel.app/', image: '/images/fogobrando.png', pick: true },
   // Oculto temporariamente a pedido — reativar quando quiser exibir de novo.
   // { title: 'Crazy Cow', subtitle: 'Lanchonete · Burgers', href: 'https://crazycow.vercel.app/', image: '/images/crazycow.png' },
 ];
 
 const studioProjects = [
-  // Nome genérico + tag de template oculta temporariamente — reativar o templateTag quando liberar.
-  { title: 'Tatuagem & Fotografia Autoral', subtitle: 'Tatuagem · Fotografia', href: 'https://projetolk.vercel.app/', image: '/images/larissawand.png' },
-  { title: 'Estúdio Tezzo', subtitle: 'Fotografia', href: 'https://estudiotezzo.vercel.app/', image: '/images/tezzo.png' },
-  { title: 'Estúdio Vasconcelos', subtitle: 'Fotografia', href: 'https://estudiovasconcelos.vercel.app/', image: '/images/vasconcelos.png' },
-  { title: 'Estúdio Marquetti', subtitle: 'Fotografia', href: 'https://estudiomarquetti.vercel.app/', image: '/images/marchetti.png' },
+  { title: 'Nora Selva', subtitle: 'Fotografia · Editorial', href: 'https://noraselva.vercel.app/', image: '/images/noraselva.png', pick: true },
+  { title: 'Pedro Tezzo', subtitle: 'Fotografia', href: 'https://estudiotezzo.vercel.app/', image: '/images/tezzo.png' },
+  { title: 'Théo Vasconcelos', subtitle: 'Fotografia', href: 'https://estudiovasconcelos.vercel.app/', image: '/images/vasconcelos.png', pick: true },
+  { title: 'Théo Marchetti', subtitle: 'Fotografia', href: 'https://estudiomarquetti.vercel.app/', image: '/images/marchetti.png' },
   // Oculto temporariamente a pedido — reativar quando o cliente liberar.
   // { title: 'Mara Valente', subtitle: 'Fotografia · Casamentos', href: 'https://maravalente.vercel.app/', image: '/images/maravalente.png' },
 ];
 
-// Seção Games oculta temporariamente a pedido — reativar quando quiser exibir de novo.
-// const gamingProjects = [
-//   { title: 'Teemo LoL', subtitle: 'League of Legends', href: 'https://teemo-lol.vercel.app/', image: '/images/teemo.png' },
-//   { title: 'Valorant Agents', subtitle: 'Valorant · Roster', href: 'https://valorant-agents-list.vercel.app/', image: '/images/valorant.png' },
-// ];
+// Gaming & streamers — hubs que reúnem todo o conteúdo de um criador num só lugar.
+const gamingProjects = [
+  { title: 'TcK10', subtitle: 'Streamer · Valorant', href: 'https://tck10-demo.vercel.app/', image: '/images/tck10.png' },
+];
 
 const contacts = [
   {
@@ -631,23 +423,8 @@ export default function Home() {
           </div>
         </FlowSection>
 
-        {/* Seção 02 — Templates Multitema (Azul — camisa) */}
-        <FlowSection aria-label="Templates Multitema" style={{ backgroundColor: '#1C3A5E', color: '#fff' }}>
-          <SectionHead
-            label="Um molde · Várias identidades"
-            kicker="Camaleão"
-            title="Templates Multitema"
-            description="Um único template que veste vários negócios: um seletor troca cores, tipografia e clima e o mesmo site vira outro. Passe o mouse e veja a troca de temas acontecer ao vivo."
-          />
-          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-1 gap-[clamp(1.5rem,2.5vw,2rem)] lg:grid-cols-3">
-            {themeShowcases.map((p, i) => (
-              <ThemeShowcaseCard key={i} {...p} accent="#2E5C92" />
-            ))}
-          </div>
-        </FlowSection>
-
-        {/* Seção 03 — Soluções Comerciais (Verde — encostas) */}
-        <FlowSection aria-label="Soluções Comerciais" style={{ backgroundColor: '#273A22', color: '#fff' }}>
+        {/* Seção 02 — Soluções Comerciais (Verde — grama das encostas) */}
+        <FlowSection aria-label="Soluções Comerciais" style={{ backgroundColor: '#2D3318', color: '#fff' }}>
           <SectionHead
             label="Negócios & Landing Pages"
             kicker="Comercial"
@@ -656,58 +433,73 @@ export default function Home() {
           />
           <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
             {commercialProjects.map((p) => (
-              <ProjectCard key={p.href} {...p} accent="#2F6B49" />
+              <ProjectCard key={p.href} {...p} accent="#4E5E27" />
+            ))}
+          </div>
+        </FlowSection>
+
+        {/* Seção 03 — Tatuagem & Arte (Azul — camisa) */}
+        <FlowSection aria-label="Tatuagem & Arte" style={{ backgroundColor: '#16335E', color: '#fff' }}>
+          <SectionHead
+            label="Tatuagem & Arte Autoral"
+            kicker="Pele"
+            title="Tatuagem & Arte"
+            description="Estúdios de tatuagem e arte autoral: o portfólio do artista e o agendamento no mesmo lugar, com o traço sempre em primeiro plano."
+          />
+          {/* Mesmo grid das outras seções (4 col no desktop) p/ manter o tamanho de card. */}
+          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
+            {tattooProjects.map((p) => (
+              <ProjectCard key={p.href} {...p} accent="#2E5C92" />
             ))}
           </div>
         </FlowSection>
 
         {/* Seção 04 — Gastronomia (Marrom — ruínas/terra) */}
-        <FlowSection aria-label="Gastronomia" style={{ backgroundColor: '#3A271B', color: '#fff' }}>
+        <FlowSection aria-label="Gastronomia" style={{ backgroundColor: '#382B1A', color: '#fff' }}>
           <SectionHead
             label="Gastronomia & Cafés"
             kicker="Sabor"
             title="Gastronomia"
-            description="Cardápios que dão água na boca — hambúrgueres, pizza de forno a lenha e café especial. Sites que despertam o apetite e levam o cliente até a mesa."
+            description="Cardápios que dão água na boca e receitas interativas para cozinhar passo a passo — pizza de forno a lenha, café especial e muito mais, do apetite à mesa."
           />
           <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
             {gastronomyProjects.map((p) => (
-              <ProjectCard key={p.href} {...p} accent="#8A4B2A" />
+              <ProjectCard key={p.href} {...p} accent="#7A5B33" />
             ))}
           </div>
         </FlowSection>
 
-        {/* Seção 05 — Portfólios e Estúdios (Azul — camisa) */}
-        <FlowSection aria-label="Portfólios e Estúdios" style={{ backgroundColor: '#1C3A5E', color: '#fff' }}>
+        {/* Seção 05 — Fotografia & Estúdios (Verde — grama das encostas) */}
+        <FlowSection aria-label="Fotografia e Estúdios" style={{ backgroundColor: '#2D3318', color: '#fff' }}>
           <SectionHead
             label="Estúdios Criativos"
             kicker="Visual"
-            title="Portfólios e Estúdios"
+            title="Fotografia & Estúdios"
             description="Vitrines digitais para fotógrafos e estúdios criativos, onde a imagem é a protagonista e a navegação some para dar espaço à obra."
           />
           <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
             {studioProjects.map((p) => (
-              <ProjectCard key={p.href} {...p} accent="#2C4A85" />
+              <ProjectCard key={p.href} {...p} accent="#4E5E27" />
             ))}
           </div>
         </FlowSection>
 
-        {/* Seção 06 — Gaming Projects — oculta temporariamente a pedido (reativar quando quiser exibir de novo)
-        <FlowSection aria-label="Gaming Projects" style={{ backgroundColor: '#273A22', color: '#fff' }}>
+        {/* Seção 06 — Gaming & Streamers (Azul — camisa) */}
+        <FlowSection aria-label="Gaming e Streamers" style={{ backgroundColor: '#16335E', color: '#fff' }}>
           <SectionHead
             label="Gaming & Comunidade"
-            kicker="Paixões"
-            title="Gaming Projects"
-            description="Unindo desenvolvimento web com meus jogos favoritos."
+            kicker="Streamers"
+            title="Gaming & Streamers"
+            description="Hubs que reúnem todo o conteúdo de um criador — Twitch, YouTube e mais — num só lugar, prontos para assistir sem sair da página."
             divider="border-white/20"
           />
-          Mesmo grid das outras seções (4 col no desktop) p/ manter o tamanho de card
+          {/* Mesmo grid das outras seções (4 col no desktop) p/ manter o tamanho de card. */}
           <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
             {gamingProjects.map((p) => (
-              <ProjectCard key={p.href} {...p} accent="#3E5A33" />
+              <ProjectCard key={p.href} {...p} accent="#2E5C92" />
             ))}
           </div>
         </FlowSection>
-        */}
 
         {/* Seção 07 — Contato (Preto) */}
         <FlowSection aria-label="Contato" style={{ backgroundColor: '#000000', color: '#fff' }}>
