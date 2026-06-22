@@ -438,8 +438,23 @@ export default function Home() {
           </div>
         </FlowSection>
 
-        {/* Seção 03 — Tatuagem & Arte (Azul — camisa) */}
-        <FlowSection aria-label="Tatuagem & Arte" style={{ backgroundColor: '#16335E', color: '#fff' }}>
+        {/* Seção 03 — Fotografia & Estúdios (Azul — camisa) */}
+        <FlowSection aria-label="Fotografia e Estúdios" style={{ backgroundColor: '#16335E', color: '#fff' }}>
+          <SectionHead
+            label="Estúdios Criativos"
+            kicker="Visual"
+            title="Fotografia & Estúdios"
+            description="Vitrines digitais para fotógrafos e estúdios criativos, onde a imagem é a protagonista e a navegação some para dar espaço à obra."
+          />
+          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
+            {studioProjects.map((p) => (
+              <ProjectCard key={p.href} {...p} accent="#2E5C92" />
+            ))}
+          </div>
+        </FlowSection>
+
+        {/* Seção 04 — Tatuagem & Arte (Marrom — ruínas/terra) */}
+        <FlowSection aria-label="Tatuagem & Arte" style={{ backgroundColor: '#382B1A', color: '#fff' }}>
           <SectionHead
             label="Tatuagem & Arte Autoral"
             kicker="Pele"
@@ -449,13 +464,13 @@ export default function Home() {
           {/* Mesmo grid das outras seções (4 col no desktop) p/ manter o tamanho de card. */}
           <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
             {tattooProjects.map((p) => (
-              <ProjectCard key={p.href} {...p} accent="#2E5C92" />
+              <ProjectCard key={p.href} {...p} accent="#7A5B33" />
             ))}
           </div>
         </FlowSection>
 
-        {/* Seção 04 — Gastronomia (Marrom — ruínas/terra) */}
-        <FlowSection aria-label="Gastronomia" style={{ backgroundColor: '#382B1A', color: '#fff' }}>
+        {/* Seção 05 — Gastronomia (Verde — grama das encostas) */}
+        <FlowSection aria-label="Gastronomia" style={{ backgroundColor: '#2D3318', color: '#fff' }}>
           <SectionHead
             label="Gastronomia & Cafés"
             kicker="Sabor"
@@ -464,21 +479,6 @@ export default function Home() {
           />
           <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
             {gastronomyProjects.map((p) => (
-              <ProjectCard key={p.href} {...p} accent="#7A5B33" />
-            ))}
-          </div>
-        </FlowSection>
-
-        {/* Seção 05 — Fotografia & Estúdios (Verde — grama das encostas) */}
-        <FlowSection aria-label="Fotografia e Estúdios" style={{ backgroundColor: '#2D3318', color: '#fff' }}>
-          <SectionHead
-            label="Estúdios Criativos"
-            kicker="Visual"
-            title="Fotografia & Estúdios"
-            description="Vitrines digitais para fotógrafos e estúdios criativos, onde a imagem é a protagonista e a navegação some para dar espaço à obra."
-          />
-          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
-            {studioProjects.map((p) => (
               <ProjectCard key={p.href} {...p} accent="#4E5E27" />
             ))}
           </div>
