@@ -421,6 +421,7 @@ const studioProjects = [
 
 // Gaming & streamers — hubs que reúnem todo o conteúdo de um criador num só lugar.
 const gamingProjects = [
+  { title: 'Teemo LoL', subtitle: 'League of Legends', href: 'https://teemo-lol.vercel.app/', image: '/images/teemo.png' },
   { title: 'TcK10', subtitle: 'Streamer · Valorant', href: 'https://tck10-demo.vercel.app/', image: '/images/tck10.png' },
 ];
 
