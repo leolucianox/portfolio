@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { ArrowUpRight, Check, ChevronDown, Mail } from 'lucide-react';
+import { ArrowUpRight, Check, ChevronDown, ChevronLeft, ChevronRight, Mail } from 'lucide-react';
 import FlowArt, { FlowSection } from '@/components/ui/story-scroll';
 
 /* -------------------------------------------------------------------------- */
@@ -182,6 +182,102 @@ function ProjectCard({ title, subtitle, href, image, accent, live, pick }: Proje
 }
 
 /* -------------------------------------------------------------------------- */
+/*  ProjectGrid                                                               */
+/*  Mesmo grid de 4 colunas usado em toda seção, mas só mostra 4 projetos     */
+/*  por vez. Com mais de 4, aparece um par de setas (entre o texto e os       */
+/*  cards, alinhado à esquerda) e os grupos de 4 deslizam como um carrossel   */
+/*  (translateX animado) em vez de trocar de uma vez.                        */
+/* -------------------------------------------------------------------------- */
+
+interface ProjectGridProps {
+  projects: Omit<ProjectCardProps, 'accent'>[];
+  accent: string;
+}
+
+const PROJECTS_PER_PAGE = 4;
+/** Espaço entre os grupos de 4 no carrossel — evita que a borda do grupo    */
+/* anterior "espie" na tela ao lado por arredondamento de subpixel no mobile. */
+const PANEL_GAP = 16;
+
+const pagerButtonClass =
+  'flex h-9 w-9 items-center justify-center rounded-full border border-white/20 bg-white/5 text-white transition-all duration-300 ease-out hover:border-white/40 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 disabled:pointer-events-none disabled:opacity-25';
+
+function ProjectGrid({ projects, accent }: ProjectGridProps) {
+  const pageCount = Math.ceil(projects.length / PROJECTS_PER_PAGE);
+  const [page, setPage] = useState(0);
+  const pages = Array.from({ length: pageCount }, (_, i) =>
+    projects.slice(i * PROJECTS_PER_PAGE, i * PROJECTS_PER_PAGE + PROJECTS_PER_PAGE),
+  );
+
+  // Mede a largura real do "palco" do carrossel em px — desloca o track por esse
+  // valor exato (em vez de translateX em %), o que evita a bordinha de 1px do
+  // grupo anterior que aparece por arredondamento de subpixel em alguns celulares.
+  const trackWrapRef = useRef<HTMLDivElement>(null);
+  const [panelWidth, setPanelWidth] = useState(0);
+
+  useEffect(() => {
+    const el = trackWrapRef.current;
+    if (!el) return;
+
+    const update = () => setPanelWidth(el.clientWidth);
+    update();
+
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div>
+      {pageCount > 1 && (
+        <div className="mt-[clamp(2rem,4vw,3rem)] flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            disabled={page === 0}
+            aria-label="Ver projetos anteriores"
+            className={pagerButtonClass}
+          >
+            <ChevronLeft className="h-4 w-4" strokeWidth={2.2} />
+          </button>
+          <button
+            type="button"
+            onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+            disabled={page === pageCount - 1}
+            aria-label="Ver mais projetos"
+            className={pagerButtonClass}
+          >
+            <ChevronRight className="h-4 w-4" strokeWidth={2.2} />
+          </button>
+        </div>
+      )}
+
+      <div ref={trackWrapRef} className={`${pageCount > 1 ? 'mt-6' : 'mt-[clamp(2rem,4vw,3rem)]'} overflow-hidden`}>
+        <div
+          className="flex transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          style={{
+            gap: `${PANEL_GAP}px`,
+            transform: `translate3d(-${page * (panelWidth + PANEL_GAP)}px, 0, 0)`,
+          }}
+        >
+          {pages.map((group, i) => (
+            <div
+              key={i}
+              style={{ width: panelWidth || '100%', flex: '0 0 auto' }}
+              className="grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4"
+            >
+              {group.map((p) => (
+                <ProjectCard key={p.href} {...p} accent={accent} />
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Botão "próxima seção" — garante navegação mesmo se o scroll travar         */
 /*  (útil principalmente no mobile). Avança ~1 viewport; no fim, volta ao topo.*/
 /* -------------------------------------------------------------------------- */
@@ -264,12 +360,12 @@ interface SectionHeadProps {
 
 function SectionHead({ label, kicker, title, description, divider = 'border-white/15' }: SectionHeadProps) {
   return (
-    <div>
+    <div className="mt-6 lg:mt-0">
       <div className="flex items-center justify-between gap-3 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-white/60 sm:text-[0.7rem] sm:tracking-[0.25em]">
         <span className="truncate">{label}</span>
         <span className="hidden shrink-0 sm:inline">{kicker}</span>
       </div>
-      <hr className={`my-[1.6vw] border-t ${divider}`} />
+      <hr className={`my-[clamp(0.75rem,1.6vw,1.5rem)] border-t ${divider}`} />
       <h2 className="font-display text-[clamp(1.75rem,5.5vw,4rem)] font-bold leading-[0.95] tracking-tight text-white">
         {title}
       </h2>
@@ -298,8 +394,13 @@ const commercialProjects = [
 
 // Tatuagem & arte autoral — estúdios com portfólio + agendamento, o traço em primeiro plano.
 const tattooProjects = [
-  { title: 'Kane Voss', subtitle: 'Tatuagem · Estúdio', href: 'https://kanevoss.vercel.app/', image: '/images/kanevoss.png' },
-  { title: 'Larissa Wand', subtitle: 'Tatuagem · Fotografia', href: 'https://projetolk.vercel.app/', image: '/images/larissawand.png', pick: true },
+  { title: 'Wand', subtitle: 'Tatuagem · Fotografia', href: 'https://projetolk.vercel.app/', image: '/images/larissawand.png', pick: true },
+  { title: 'Morais V1', subtitle: 'Tatuagem', href: 'https://juliamoraisv1.vercel.app/pt', image: '/images/juliav1.png' },
+  { title: 'Voss', subtitle: 'Tatuagem · Estúdio', href: 'https://kanevoss.vercel.app/', image: '/images/kanevoss.png' },
+  { title: 'Morais V5', subtitle: 'Tatuagem', href: 'https://juliomoraisv5.vercel.app/pt', image: '/images/juliov5.png' },
+  { title: 'Morais V4', subtitle: 'Tatuagem', href: 'https://juliomoraisv4.vercel.app/', image: '/images/juliov4.png' },
+  { title: 'Morais V2', subtitle: 'Tatuagem', href: 'https://juliamoraisv2.vercel.app/', image: '/images/juliav2.png' },
+  { title: 'Morais V3', subtitle: 'Tatuagem', href: 'https://juliamoraisv3.vercel.app/', image: '/images/juliav3.png' },
 ];
 
 const gastronomyProjects = [
@@ -311,12 +412,11 @@ const gastronomyProjects = [
 ];
 
 const studioProjects = [
-  { title: 'Nora Selva', subtitle: 'Fotografia · Editorial', href: 'https://noraselva.vercel.app/', image: '/images/noraselva.png', pick: true },
-  { title: 'Pedro Tezzo', subtitle: 'Fotografia', href: 'https://estudiotezzo.vercel.app/', image: '/images/tezzo.png' },
-  { title: 'Théo Vasconcelos', subtitle: 'Fotografia', href: 'https://estudiovasconcelos.vercel.app/', image: '/images/vasconcelos.png', pick: true },
-  { title: 'Théo Marchetti', subtitle: 'Fotografia', href: 'https://estudiomarquetti.vercel.app/', image: '/images/marchetti.png' },
-  // Oculto temporariamente a pedido — reativar quando o cliente liberar.
-  // { title: 'Mara Valente', subtitle: 'Fotografia · Casamentos', href: 'https://maravalente.vercel.app/', image: '/images/maravalente.png' },
+  { title: 'Selva', subtitle: 'Fotografia · Editorial', href: 'https://noraselva.vercel.app/', image: '/images/noraselva.png', pick: true },
+  { title: 'Tezzo', subtitle: 'Fotografia', href: 'https://estudiotezzo.vercel.app/', image: '/images/tezzo.png' },
+  { title: 'Vasconcelos', subtitle: 'Fotografia', href: 'https://estudiovasconcelos.vercel.app/', image: '/images/vasconcelos.png', pick: true },
+  { title: 'Marchetti', subtitle: 'Fotografia', href: 'https://estudiomarquetti.vercel.app/', image: '/images/marchetti.png' },
+  { title: 'Valente', subtitle: 'Fotografia · Casamentos', href: 'https://maravalente.vercel.app/', image: '/images/maravalente.png' },
 ];
 
 // Gaming & streamers — hubs que reúnem todo o conteúdo de um criador num só lugar.
@@ -423,50 +523,38 @@ export default function Home() {
           </div>
         </FlowSection>
 
-        {/* Seção 02 — Soluções Comerciais (Verde — grama das encostas) */}
-        <FlowSection aria-label="Soluções Comerciais" style={{ backgroundColor: '#2D3318', color: '#fff' }}>
+        {/* Seção 02 — Soluções Comerciais (Grafite — pedra) */}
+        <FlowSection aria-label="Soluções Comerciais" style={{ backgroundColor: '#2C3C40', color: '#fff' }}>
           <SectionHead
             label="Negócios & Landing Pages"
             kicker="Comercial"
             title="Soluções Comerciais"
             description="Sites de conversão para negócios reais — de reservas a vendas, pensados para velocidade, clareza e confiança."
           />
-          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
-            {commercialProjects.map((p) => (
-              <ProjectCard key={p.href} {...p} accent="#4E5E27" />
-            ))}
-          </div>
+          <ProjectGrid projects={commercialProjects} accent="#4B666D" />
         </FlowSection>
 
-        {/* Seção 03 — Fotografia & Estúdios (Azul — camisa) */}
-        <FlowSection aria-label="Fotografia e Estúdios" style={{ backgroundColor: '#16335E', color: '#fff' }}>
+        {/* Seção 03 — Tatuagem & Arte (Verde — grama das encostas) */}
+        <FlowSection aria-label="Tatuagem & Arte" style={{ backgroundColor: '#2D3318', color: '#fff' }}>
+          <SectionHead
+            label="Tatuagem & Arte Autoral"
+            kicker="Pele"
+            title="Tatuagem & Arte"
+            description="Portfólio do artista e agendamento no mesmo lugar, com o traço sempre em primeiro plano."
+          />
+          {/* 6 projetos — mesmo card das outras seções, 4 por página com setas prev/next. */}
+          <ProjectGrid projects={tattooProjects} accent="#4E5E27" />
+        </FlowSection>
+
+        {/* Seção 04 — Fotografia & Estúdios (Azul — camisa) */}
+        <FlowSection aria-label="Fotografia e Estúdios" style={{ backgroundColor: '#162E53', color: '#fff' }}>
           <SectionHead
             label="Estúdios Criativos"
             kicker="Visual"
             title="Fotografia & Estúdios"
             description="Vitrines digitais para fotógrafos e estúdios criativos, onde a imagem é a protagonista e a navegação some para dar espaço à obra."
           />
-          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
-            {studioProjects.map((p) => (
-              <ProjectCard key={p.href} {...p} accent="#2E5C92" />
-            ))}
-          </div>
-        </FlowSection>
-
-        {/* Seção 04 — Tatuagem & Arte (Marrom — ruínas/terra) */}
-        <FlowSection aria-label="Tatuagem & Arte" style={{ backgroundColor: '#382B1A', color: '#fff' }}>
-          <SectionHead
-            label="Tatuagem & Arte Autoral"
-            kicker="Pele"
-            title="Tatuagem & Arte"
-            description="Estúdios de tatuagem e arte autoral: o portfólio do artista e o agendamento no mesmo lugar, com o traço sempre em primeiro plano."
-          />
-          {/* Mesmo grid das outras seções (4 col no desktop) p/ manter o tamanho de card. */}
-          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
-            {tattooProjects.map((p) => (
-              <ProjectCard key={p.href} {...p} accent="#7A5B33" />
-            ))}
-          </div>
+          <ProjectGrid projects={studioProjects} accent="#2E5C92" />
         </FlowSection>
 
         {/* Seção 05 — Gastronomia (Verde — grama das encostas) */}
@@ -477,15 +565,11 @@ export default function Home() {
             title="Gastronomia"
             description="Cardápios que dão água na boca e receitas interativas para cozinhar passo a passo — pizza de forno a lenha, café especial e muito mais, do apetite à mesa."
           />
-          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
-            {gastronomyProjects.map((p) => (
-              <ProjectCard key={p.href} {...p} accent="#4E5E27" />
-            ))}
-          </div>
+          <ProjectGrid projects={gastronomyProjects} accent="#4E5E27" />
         </FlowSection>
 
-        {/* Seção 06 — Gaming & Streamers (Azul — camisa) */}
-        <FlowSection aria-label="Gaming e Streamers" style={{ backgroundColor: '#16335E', color: '#fff' }}>
+        {/* Seção 06 — Gaming & Streamers (Grafite — pedra) */}
+        <FlowSection aria-label="Gaming e Streamers" style={{ backgroundColor: '#2C3C40', color: '#fff' }}>
           <SectionHead
             label="Gaming & Comunidade"
             kicker="Streamers"
@@ -493,12 +577,7 @@ export default function Home() {
             description="Hubs que reúnem todo o conteúdo de um criador — Twitch, YouTube e mais — num só lugar, prontos para assistir sem sair da página."
             divider="border-white/20"
           />
-          {/* Mesmo grid das outras seções (4 col no desktop) p/ manter o tamanho de card. */}
-          <div className="mt-[clamp(2rem,4vw,3rem)] grid grid-cols-2 gap-[clamp(1.25rem,2.2vw,2rem)] lg:grid-cols-4">
-            {gamingProjects.map((p) => (
-              <ProjectCard key={p.href} {...p} accent="#2E5C92" />
-            ))}
-          </div>
+          <ProjectGrid projects={gamingProjects} accent="#4B666D" />
         </FlowSection>
 
         {/* Seção 07 — Contato (Preto) */}
